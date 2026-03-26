@@ -21,6 +21,7 @@ export default function ChecklistApp() {
   const [form, setForm] = useState({ evento: '', local: '', presentes: '', convidados: '', obs: '', responsavel: '' });
   const areaCapturaRef = useRef();
 
+  // BLOCO: Lógica de carregamento e Edição
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const idRel = params.get('id');
@@ -47,6 +48,7 @@ export default function ChecklistApp() {
     }
   }, []);
 
+  // BLOCO: Salvar (Insert ou Update)
   const salvarRelatorio = async () => {
     if (!form.evento || !form.responsavel) return alert("Preencha o evento e a assinatura.");
     setLoading(true);
@@ -83,25 +85,28 @@ export default function ChecklistApp() {
     setLoading(false);
   };
 
+  // BLOCO: Enviar WhatsApp (Texto Formatado)
   const enviarWhatsApp = () => {
     const link = `${window.location.origin}/?id=${reportId}`;
-    
-    // TEXTO EXATO QUE VOCÊ PEDIU
     const texto = `Olá! Finalizamos a organização e conferência dos seus pertences. Tudo foi recolhido com muito cuidado por nossa equipe. Aqui está o resumo de tudo o que guardamos:\n\n✨ *Seu Relatório Digital:* ${link}\n\nFoi um prazer fazer parte desse sonho.`;
-    
     window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_top');
   };
 
   return (
     <div className="min-h-screen bg-[#7e7f7f] p-4 flex flex-col items-center font-sans text-slate-800 pb-10">
+      
+      {/* BLOCO: Configuração do Link para o WhatsApp (Usa a logo icon.png da public) */}
       <Head>
         <title>Cerimonial Elite | Relatório Digital</title>
         <meta property="og:title" content="Cerimonial Elite" />
-        <meta property="og:image" content="https://rticfwqptlxkpgawpzwf.supabase.co/storage/v1/object/public/fotos/logo.png" />
+        <meta property="og:description" content="Clique para ver o resumo dos seus pertences colhidos." />
+        <meta property="og:image" content={typeof window !== 'undefined' ? window.location.origin + '/icon.png' : ''} />
+        <meta property="og:type" content="website" />
       </Head>
       
-      <img src="https://rticfwqptlxkpgawpzwf.supabase.co/storage/v1/object/public/fotos/logo.png" className="max-w-[140px] mb-10 mt-6" alt="Logo" />
+      <img src="/icon.png" className="max-w-[140px] mb-10 mt-6" alt="Logo" />
 
+      {/* TELA: FORMULÁRIO */}
       {etapa === 'form' && (
         <div className="w-full max-w-md animate-in fade-in duration-500">
            <div className="flex justify-end mb-4">
@@ -124,13 +129,13 @@ export default function ChecklistApp() {
                 <input className="flex-1 bg-gray-50 rounded-xl px-4 text-xs outline-none" placeholder="Adicionar item..." value={novoItem} onChange={e=>setNovoItem(e.target.value)} />
                 <button onClick={() => { if(novoItem.trim()){ setItens([...itens, novoItem.trim()]); setNovoItem(''); } }} className="bg-[#ded0b8] p-2 rounded-lg text-white shadow-sm"><Plus size={18}/></button>
               </div>
-              <ul className="text-xs space-y-2 max-h-32 overflow-y-auto">
-                {itens.map((it, i) => <li key={i} className="bg-gray-50 p-2 rounded-lg flex justify-between italic text-gray-500">• {it} <Trash2 size={14} onClick={()=>setItens(itens.filter((_,idx)=>idx!==i))} className="text-red-200 cursor-pointer"/></li>)}
+              <ul className="text-xs space-y-2 max-h-32 overflow-y-auto pt-2">
+                {itens.map((it, i) => <li key={i} className="bg-gray-50 p-3 rounded-xl flex justify-between italic text-gray-500">• {it} <Trash2 size={14} onClick={()=>setItens(itens.filter((_,idx)=>idx!==i))} className="text-red-200 cursor-pointer"/></li>)}
               </ul>
               <textarea className="w-full border rounded-2xl p-3 text-xs outline-none bg-gray-50/30" placeholder="Observações..." value={form.obs} onChange={e=>setForm({...form, obs: e.target.value})} rows={3}></textarea>
               <input className="w-full border-b p-2 outline-none text-sm font-bold" placeholder="Sua Assinatura" value={form.responsavel} onChange={e=>setForm({...form, responsavel: e.target.value})} />
               
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-2xl p-4 cursor-pointer">
+              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-2xl p-4 cursor-pointer hover:bg-gray-50">
                 <Camera className="text-gray-300 mb-1" />
                 <span className="text-[10px] font-bold text-gray-300 uppercase">Foto dos Pertences</span>
                 <input type="file" accept="image/*" capture="camera" className="hidden" onChange={(e) => {
@@ -146,10 +151,11 @@ export default function ChecklistApp() {
         </div>
       )}
 
+      {/* TELA: RESUMO (CONFERÊNCIA) */}
       {etapa === 'resumo' && (
         <div className="w-full flex flex-col items-center pb-24 animate-in fade-in duration-500">
           <div ref={areaCapturaRef} className="w-[380px] bg-[#7e7f7f] p-8 flex flex-col items-center">
-            <img src="https://rticfwqptlxkpgawpzwf.supabase.co/storage/v1/object/public/fotos/logo.png" className="max-w-[130px] mb-8" />
+            <img src="/icon.png" className="max-w-[130px] mb-8" />
             <div className="w-full bg-white rounded-[30px] p-10 text-gray-700 text-xs shadow-sm leading-relaxed">
                 <h2 className="text-center font-bold text-lg mb-8 uppercase tracking-[8px] text-[#7e7f7f] border-b pb-4">Relatório</h2>
                 <div className="space-y-4">
@@ -171,6 +177,7 @@ export default function ChecklistApp() {
         </div>
       )}
 
+      {/* TELA: SUCESSO */}
       {etapa === 'sucesso' && (
         <div className="bg-white rounded-[45px] p-12 text-center shadow-2xl max-w-xs mt-20">
           <div className="text-6xl mb-6">✨</div>
@@ -180,6 +187,7 @@ export default function ChecklistApp() {
         </div>
       )}
 
+      {/* TELA: VIEW DO CLIENTE */}
       {etapa === 'view' && (
         <div className="w-full flex flex-col items-center mt-10">
            <div className="w-[380px] bg-white rounded-[35px] p-8 shadow-2xl text-gray-700">
