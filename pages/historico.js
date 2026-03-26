@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Send, Trash2, Loader2, FileText, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Send, Trash2, Loader2, FileText, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 
 const supabase = createClient(
@@ -29,29 +29,50 @@ export default function Historico() {
     }
   };
 
+  const reenviarZap = (r) => {
+    const linkApp = `${window.location.origin}/?id=${r.id}`;
+    
+    // TEXTO EXATO QUE VOCÊ PEDIU
+    const texto = `Olá! Finalizamos a organização e conferência dos seus pertences. Tudo foi recolhido com muito cuidado por nossa equipe. Aqui está o resumo de tudo o que guardamos:\n\n✨ *Seu Relatório Digital:* ${linkApp}\n\nFoi um prazer fazer parte desse sonho.`;
+    
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_top');
+  };
+
   return (
-    <div className="min-h-screen bg-[#7e7f7f] p-6 font-sans">
+    <div className="min-h-screen bg-[#7e7f7f] p-6 font-sans text-slate-800">
       <div className="max-w-md mx-auto">
         <div className="flex items-center mb-8 pt-4">
           <Link href="/" className="bg-white/20 p-2 rounded-full text-white"><ArrowLeft size={20}/></Link>
-          <h1 className="text-white font-bold ml-4 uppercase tracking-widest text-sm">Histórico do Evento</h1>
+          <h1 className="text-white font-bold ml-4 uppercase tracking-widest text-sm">Histórico Geral</h1>
         </div>
 
         {loading ? <div className="flex justify-center py-20"><Loader2 className="animate-spin text-white/50" /></div> : (
-          <div className="space-y-4 pb-10">
+          <div className="space-y-6 pb-10">
             {relatorios.map(r => (
-              <div key={r.id} className="bg-white p-5 rounded-[25px] shadow-lg flex items-center justify-between">
-                <div className="flex items-center gap-4 cursor-pointer" onClick={() => window.location.href=`/?id=${r.id}`}>
-                   <div className="bg-gray-100 p-3 rounded-2xl text-[#ded0b8]"><FileText size={20}/></div>
-                   <div>
-                      <p className="font-bold text-gray-600 text-[10px] uppercase leading-tight pr-2">{r.evento || 'Relatório Sem Nome'}</p>
-                      <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase">{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
-                   </div>
+              <div key={r.id} className="bg-white rounded-[30px] p-6 shadow-xl border-l-4 border-[#ded0b8] animate-in fade-in duration-500">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-gray-50 p-2 rounded-xl text-[#ded0b8]"><FileText size={20}/></div>
+                        <div>
+                            <h3 className="font-bold text-gray-700 uppercase text-xs leading-tight">{r.evento || 'Relatório'}</h3>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => excluir(r.id)} className="text-red-100 hover:text-red-300 p-2 transition-colors"><Trash2 size={16}/></button>
                 </div>
+                
                 <div className="flex gap-2">
-                   <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent('Seu Relatório Digital: ' + window.location.origin + '/?id=' + r.id)}`)} className="p-2 text-[#25D366]"><Send size={18}/></button>
-                   <button onClick={() => excluir(r.id)} className="p-2 text-red-100"><Trash2 size={18}/></button>
-                   <ChevronRight className="text-gray-200" size={16} />
+                    {/* BOTÃO EDITAR (O LAPISINHO) */}
+                    <button 
+                      onClick={() => window.location.href = `/?id=${r.id}&edit=true`}
+                      className="flex-1 bg-gray-50 text-gray-400 text-[10px] font-bold uppercase py-4 rounded-2xl flex items-center justify-center gap-2 border border-gray-100 shadow-inner"
+                    >
+                        <Edit2 size={14}/> Editar Dados
+                    </button>
+
+                    <button onClick={() => reenviarZap(r)} className="flex-1 bg-[#25D366] text-white text-[10px] font-bold uppercase py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all">
+                        <Send size={14}/> Reenviar no Zap
+                    </button>
                 </div>
               </div>
             ))}
