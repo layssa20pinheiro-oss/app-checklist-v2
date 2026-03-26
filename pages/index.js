@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Plus, Calendar, ChevronRight, Loader2, Edit2, Trash2, Users } from 'lucide-react';
+import { Plus, Calendar, Trash2, Users, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 import Head from 'next/head';
 
@@ -67,43 +67,93 @@ export default function Home() {
         <div className="w-full max-w-md bg-white rounded-[35px] p-8 shadow-2xl text-gray-700">
            <h2 className="text-[#7e7f7f] text-center font-bold text-xl mb-8 uppercase tracking-[5px]">Relatório Digital</h2>
            <div className="space-y-4 text-sm border-t pt-6">
-              <p><strong>EVENTO:</strong> {reportPublico.evento}</p>
-              <p><strong>LOCAL:</strong> {reportPublico.local}</p>
-              <div className="border-t pt-4 font-bold uppercase text-[10px] text-gray-400">Itens Recolhidos:</div>
-              <ul className="space-y-1 italic text-gray-500">{reportPublico.itens?.map((it, i) => <li key={i}>• {it}</li>)}</ul>
-              <p className="border-t pt-4 italic"><strong>RESPONSÁVEL:</strong> {reportPublico.responsavel}</p>
-           </div>
+             <p><strong>EVENTO:</strong> {reportPublico.evento}</p>
+             <p><strong>LOCAL:</strong> {reportPublico.local}</p>
+             <div className="border-t pt-4 font-bold uppercase text-[10px] text-gray-400">Itens Recolhidos:</div>
+             <ul className="space-y-1 italic text-gray-500">{reportPublico.itens?.map((it, i) => <li key={i}>• {it}</li>)}</ul>
+             <p className="border-t pt-4 italic"><strong>RESPONSÁVEL:</strong> {reportPublico.responsavel}</p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // --- LÓGICA DE SEPARAÇÃO DAS DATAS ---
+  const hoje = new Date().toISOString().split('T')[0]; // Pega a data de hoje no formato YYYY-MM-DD
+  
+  // Eventos que não tem data OU a data é hoje ou no futuro
+  const eventosFuturos = eventos.filter(ev => !ev.data || ev.data >= hoje);
+  
+  // Eventos que tem data E a data já passou
+  const eventosPassados = eventos.filter(ev => ev.data && ev.data < hoje);
+
   return (
-    <div className="min-h-screen bg-[#7e7f7f] p-6 font-sans">
+    <div className="min-h-screen bg-[#7e7f7f] p-6 font-sans pb-20">
       <Head><title>Cerimonial Elite</title><link rel="icon" href="/icon.png" /></Head>
       <div className="max-w-md mx-auto">
+        
         <img src="https://rticfwqptlxkpgawpzwf.supabase.co/storage/v1/object/public/fotos/logo.png" className="max-w-[140px] mx-auto mb-10 mt-6" />
-        <div className="flex justify-between items-center mb-6 text-white font-bold uppercase tracking-[3px] text-sm">
+        
+        <div className="flex justify-between items-center mb-8 text-white font-bold uppercase tracking-[3px] text-sm">
           <h1>Meus Eventos</h1>
-          <button onClick={() => { setIsEditing(false); setNovoEvento({nome:'', data:''}); setShowModal(true); }} className="bg-[#ded0b8] p-2 rounded-xl shadow-lg"><Plus size={20}/></button>
+          <button onClick={() => { setIsEditing(false); setNovoEvento({nome:'', data:''}); setShowModal(true); }} className="bg-[#ded0b8] p-2 rounded-xl shadow-lg hover:scale-105 transition-all">
+             <Plus size={20}/>
+          </button>
         </div>
-        <div className="space-y-4">
-          {eventos.map(ev => (
-            <div key={ev.id} className="relative">
-              <Link href={`/menu-evento?id=${ev.id}`} className="block bg-white p-5 rounded-[30px] shadow-xl hover:scale-[1.01] transition-all">
-                <h3 className="font-bold text-gray-700 uppercase text-xs pr-20">{ev.nome}</h3>
-                <div className="flex gap-3 mt-2 text-[9px] text-gray-400 font-bold uppercase">
-                   <span><Calendar size={10} className="inline mr-1"/>{ev.data ? new Date(ev.data).toLocaleDateString('pt-BR') : '--/--'}</span>
-                   <span className="text-[#8da38d]"><Users size={10} className="inline mr-1"/>{ev.convidados?.length || 0} Convidados</span>
-                </div>
-              </Link>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
-                <button onClick={() => { setEventToEdit(ev); setNovoEvento({nome: ev.nome, data: ev.data}); setIsEditing(true); setShowModal(true); }} className="text-gray-200 hover:text-[#ded0b8] p-2 transition-colors"><Edit2 size={16}/></button>
-                <button onClick={(e) => deletarEvento(ev.id, e)} className="text-gray-200 hover:text-red-300 p-2 transition-colors"><Trash2 size={16}/></button>
-              </div>
-            </div>
-          ))}
+
+        {/* --- LISTA DE EVENTOS FUTUROS --- */}
+        <div className="mb-10">
+           <h2 className="text-white/50 font-bold text-[10px] uppercase tracking-widest mb-4 border-b border-white/10 pb-2">
+             Próximos Eventos
+           </h2>
+           <div className="space-y-4">
+             {eventosFuturos.length > 0 ? eventosFuturos.map(ev => (
+               <div key={ev.id} className="relative group">
+                 <Link href={`/menu-evento?id=${ev.id}`} className="block bg-white p-5 rounded-[30px] shadow-xl hover:scale-[1.01] transition-all">
+                   <h3 className="font-bold text-gray-700 uppercase text-xs pr-20">{ev.nome}</h3>
+                   <div className="flex gap-3 mt-2 text-[9px] text-gray-400 font-bold uppercase">
+                      <span className="flex items-center gap-1"><Calendar size={10} className="text-[#ded0b8]"/>{ev.data ? new Date(ev.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'Sem Data'}</span>
+                      <span className="flex items-center gap-1 text-[#8da38d]"><Users size={10} />{ev.convidados?.length || 0} Convidados</span>
+                   </div>
+                 </Link>
+                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
+                   <button onClick={() => { setEventToEdit(ev); setNovoEvento({nome: ev.nome, data: ev.data}); setIsEditing(true); setShowModal(true); }} className="text-gray-200 hover:text-[#ded0b8] p-2 transition-colors"><Edit2 size={16}/></button>
+                   <button onClick={(e) => deletarEvento(ev.id, e)} className="text-gray-200 hover:text-red-300 p-2 transition-colors"><Trash2 size={16}/></button>
+                 </div>
+               </div>
+             )) : (
+               <p className="text-white/40 italic text-xs py-4 text-center">Nenhum evento agendado.</p>
+             )}
+           </div>
         </div>
+
+        {/* --- LISTA DE EVENTOS PASSADOS --- */}
+        {eventosPassados.length > 0 && (
+          <div>
+             <h2 className="text-white/50 font-bold text-[10px] uppercase tracking-widest mb-4 border-b border-white/10 pb-2">
+               Eventos Anteriores
+             </h2>
+             <div className="space-y-4">
+               {eventosPassados.map(ev => (
+                 <div key={ev.id} className="relative group opacity-80 hover:opacity-100 transition-opacity">
+                   <Link href={`/menu-evento?id=${ev.id}`} className="block bg-gray-100 p-5 rounded-[30px] shadow-md hover:scale-[1.01] transition-all">
+                     <h3 className="font-bold text-gray-500 uppercase text-xs pr-20">{ev.nome}</h3>
+                     <div className="flex gap-3 mt-2 text-[9px] text-gray-400 font-bold uppercase">
+                        <span className="flex items-center gap-1"><Calendar size={10} className="text-gray-400"/>{ev.data ? new Date(ev.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : '--/--'}</span>
+                        <span className="flex items-center gap-1"><Users size={10} />{ev.convidados?.length || 0} Convidados</span>
+                     </div>
+                   </Link>
+                   <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
+                     <button onClick={() => { setEventToEdit(ev); setNovoEvento({nome: ev.nome, data: ev.data}); setIsEditing(true); setShowModal(true); }} className="text-gray-300 hover:text-[#ded0b8] p-2 transition-colors"><Edit2 size={16}/></button>
+                     <button onClick={(e) => deletarEvento(ev.id, e)} className="text-gray-300 hover:text-red-300 p-2 transition-colors"><Trash2 size={16}/></button>
+                   </div>
+                 </div>
+               ))}
+             </div>
+          </div>
+        )}
+
+        {/* MODAL DE NOVO/EDITAR EVENTO */}
         {showModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
             <div className="bg-white w-full max-w-xs rounded-[35px] p-8 shadow-2xl">
@@ -111,8 +161,8 @@ export default function Home() {
               <input className="w-full border-b p-3 mb-4 outline-none text-sm" placeholder="Nome" value={novoEvento.nome} onChange={e=>setNovoEvento({...novoEvento, nome: e.target.value})} />
               <input type="date" className="w-full border-b p-3 mb-8 outline-none text-sm text-gray-400" value={novoEvento.data} onChange={e=>setNovoEvento({...novoEvento, data: e.target.value})} />
               <div className="flex gap-2">
-                <button onClick={()=>setShowModal(false)} className="flex-1 text-gray-400 font-bold text-[10px] uppercase">Sair</button>
-                <button onClick={salvarEvento} className="flex-2 bg-[#8da38d] text-white px-6 py-3 rounded-2xl font-bold uppercase text-[10px]">Salvar</button>
+                <button onClick={()=>setShowModal(false)} className="flex-1 text-gray-400 font-bold text-[10px] uppercase">Cancelar</button>
+                <button onClick={salvarEvento} className="flex-2 bg-[#8da38d] text-white px-6 py-3 rounded-2xl font-bold uppercase text-[10px] active:scale-95 transition-all">Salvar</button>
               </div>
             </div>
           </div>
