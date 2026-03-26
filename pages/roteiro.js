@@ -19,7 +19,7 @@ export default function Roteiro() {
   const [abaAtiva, setAbaAtiva] = useState('cerimonia');
   
   const [showModal, setShowModal] = useState(false);
-  const [modoModal, setModoModal] = useState('manual'); // 'manual' ou 'ia'
+  const [modoModal, setModoModal] = useState('manual');
   const [novoItem, setNovoItem] = useState({ horario: '', atividade: '', detalhes: '' });
   const [textoRascunho, setTextoRascunho] = useState('');
   const [gerandoIA, setGerandoIA] = useState(false);
@@ -54,7 +54,7 @@ export default function Roteiro() {
     await supabase.from('roteiros').update({ concluido: !item.concluido }).eq('id', item.id);
   };
 
-  // --- A MÁGICA DA IA ACONTECE AQUI ---
+  // --- O CÓDIGO DA IA COM DETECTOR DE ERRO ---
   const organizarComIA = async () => {
     if (!textoRascunho) return alert("Cole o rascunho do roteiro primeiro!");
     setGerandoIA(true);
@@ -65,12 +65,16 @@ export default function Roteiro() {
         body: JSON.stringify({ textoRascunho })
       });
 
-      if (!response.ok) throw new Error("Erro na IA");
+      const data = await response.json();
+
+      // SE DEU ERRO, MOSTRA O MOTIVO EXATO:
+      if (!response.ok) {
+        alert("Detalhe do Erro: " + data.error);
+        setGerandoIA(false);
+        return;
+      }
       
-      const roteiroOrganizado = await response.json();
-      
-      // Salva tudo de uma vez no Supabase
-      const itensParaSalvar = roteiroOrganizado.map(item => ({
+      const itensParaSalvar = data.map(item => ({
         horario: item.horario || '00:00',
         atividade: item.atividade || 'Atividade',
         detalhes: item.detalhes || '',
@@ -86,7 +90,7 @@ export default function Roteiro() {
       carregarRoteiro();
       alert("✨ Mágica feita! Roteiro organizado com sucesso!");
     } catch (error) {
-      alert("Ocorreu um erro ao processar com a IA. Tente novamente.");
+      alert("Erro no aplicativo: " + error.message);
     }
     setGerandoIA(false);
   };
@@ -159,7 +163,7 @@ export default function Roteiro() {
                 </div>
               ) : (
                 <div className="space-y-4 mb-6">
-                  <p className="text-[10px] text-gray-500 italic text-center leading-tight">Cole o texto do WhatsApp ou cronograma bagunçado. A nossa IA organizará tudo em horários e categorias num piscar de olhos.</p>
+                  <p className="text-[10px] text-gray-500 italic text-center leading-tight">Cole o texto bagunçado. A IA organizará tudo em horários e categorias num piscar de olhos.</p>
                   <textarea className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 outline-none text-xs text-gray-600 h-32" placeholder="Ex: 19h inicio, dps entrada dos pais tocando aleluia, 21h abre salão..." value={textoRascunho} onChange={e=>setTextoRascunho(e.target.value)}></textarea>
                   <div className="flex gap-2 pt-2">
                     <button onClick={()=>setShowModal(false)} disabled={gerandoIA} className="flex-1 text-gray-400 font-bold text-[10px] uppercase">Sair</button>
@@ -177,4 +181,3 @@ export default function Roteiro() {
     </div>
   );
 }
-
