@@ -31,10 +31,7 @@ export default function Historico() {
 
   const reenviarZap = (r) => {
     const linkApp = `${window.location.origin}/?id=${r.id}`;
-    
-    // TEXTO EXATO QUE VOCÊ PEDIU
     const texto = `Olá! Finalizamos a organização e conferência dos seus pertences. Tudo foi recolhido com muito cuidado por nossa equipe. Aqui está o resumo de tudo o que guardamos:\n\n✨ *Seu Relatório Digital:* ${linkApp}\n\nFoi um prazer fazer parte desse sonho.`;
-    
     window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_top');
   };
 
@@ -49,7 +46,7 @@ export default function Historico() {
         {loading ? <div className="flex justify-center py-20"><Loader2 className="animate-spin text-white/50" /></div> : (
           <div className="space-y-6 pb-10">
             {relatorios.map(r => (
-              <div key={r.id} className="bg-white rounded-[30px] p-6 shadow-xl border-l-4 border-[#ded0b8] animate-in fade-in duration-500">
+              <div key={r.id} className="bg-white rounded-[30px] p-6 shadow-xl border-l-4 border-[#ded0b8] animate-in fade-in">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
                         <div className="bg-gray-50 p-2 rounded-xl text-[#ded0b8]"><FileText size={20}/></div>
@@ -58,11 +55,10 @@ export default function Historico() {
                             <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
                         </div>
                     </div>
-                    <button onClick={() => excluir(r.id)} className="text-red-100 hover:text-red-300 p-2 transition-colors"><Trash2 size={16}/></button>
+                    <button onClick={() => excluir(r.id)} className="text-red-100 hover:text-red-300 p-2"><Trash2 size={16}/></button>
                 </div>
                 
                 <div className="flex gap-2">
-                    {/* BOTÃO EDITAR (O LAPISINHO) */}
                     <button 
                       onClick={() => window.location.href = `/?id=${r.id}&edit=true`}
                       className="flex-1 bg-gray-50 text-gray-400 text-[10px] font-bold uppercase py-4 rounded-2xl flex items-center justify-center gap-2 border border-gray-100 shadow-inner"
@@ -70,13 +66,12 @@ export default function Historico() {
                         <Edit2 size={14}/> Editar Dados
                     </button>
 
-                    <button onClick={() => reenviarZap(r)} className="flex-1 bg-[#25D366] text-white text-[10px] font-bold uppercase py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all">
+                    <button onClick={() => reenviarZap(r)} className="flex-1 bg-[#25D366] text-white text-[10px] font-bold uppercase py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg">
                         <Send size={14}/> Reenviar no Zap
                     </button>
                 </div>
               </div>
             ))}
-            {relatorios.length === 0 && <p className="text-center text-white/40 italic py-10 uppercase text-[10px] tracking-widest font-bold">Nenhum relatório encontrado.</p>}
           </div>
         )}
       </div>
