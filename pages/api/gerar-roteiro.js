@@ -25,7 +25,8 @@ export default async function handler(req, res) {
   `;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // AQUI ESTÁ A MUDANÇA: Usando o modelo "gemini-pro" que é o padrão universal.
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -35,7 +36,6 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // SE O GOOGLE RECUSAR, ELE AVISA AQUI!
     if (!response.ok) {
       return res.status(500).json({ error: `Recusado pelo Google: ${data.error?.message || 'Erro desconhecido'}` });
     }
