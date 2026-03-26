@@ -18,7 +18,7 @@ export default function Home() {
   const [isEditing, setIsEditing] = useState(false);
   const [eventToEdit, setEventToEdit] = useState(null);
   
-  // ESTADO DAS ABINHAS ('proximos' ou 'concluidos')
+  // ESTADO DAS ABINHAS SUTIS
   const [abaAtiva, setAbaAtiva] = useState('proximos');
 
   useEffect(() => {
@@ -81,7 +81,6 @@ export default function Home() {
     );
   }
 
-  // --- LÓGICA DE SEPARAÇÃO DAS DATAS ---
   const hoje = new Date().toISOString().split('T')[0];
   const eventosFuturos = eventos.filter(ev => !ev.data || ev.data >= hoje);
   const eventosPassados = eventos.filter(ev => ev.data && ev.data < hoje);
@@ -93,24 +92,32 @@ export default function Home() {
         
         <img src="https://rticfwqptlxkpgawpzwf.supabase.co/storage/v1/object/public/fotos/logo.png" className="max-w-[140px] mx-auto mb-10 mt-6" />
         
-        <div className="flex justify-between items-center mb-6 text-white font-bold uppercase tracking-[3px] text-sm">
+        <div className="flex justify-between items-center mb-8 text-white font-bold uppercase tracking-[3px] text-sm">
           <h1>Meus Eventos</h1>
           <button onClick={() => { setIsEditing(false); setNovoEvento({nome:'', data:''}); setShowModal(true); }} className="bg-[#ded0b8] p-2 rounded-xl shadow-lg hover:scale-105 transition-all">
              <Plus size={20}/>
           </button>
         </div>
 
-        {/* --- ABINHAS --- */}
-        <div className="flex bg-white/10 p-1 rounded-2xl mb-8">
+        {/* --- ABINHAS SUTIS E ELEGANTES --- */}
+        <div className="flex gap-6 border-b border-white/10 mb-8 px-2">
           <button 
             onClick={() => setAbaAtiva('proximos')}
-            className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${abaAtiva === 'proximos' ? 'bg-white text-gray-700 shadow-md' : 'text-white/60 hover:text-white'}`}
+            className={`pb-3 text-[10px] font-bold uppercase tracking-[2px] transition-all duration-300 ${
+              abaAtiva === 'proximos' 
+                ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' 
+                : 'text-white/40 hover:text-white/70'
+            }`}
           >
             Próximos
           </button>
           <button 
             onClick={() => setAbaAtiva('concluidos')}
-            className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${abaAtiva === 'concluidos' ? 'bg-white text-gray-700 shadow-md' : 'text-white/60 hover:text-white'}`}
+            className={`pb-3 text-[10px] font-bold uppercase tracking-[2px] transition-all duration-300 ${
+              abaAtiva === 'concluidos' 
+                ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' 
+                : 'text-white/40 hover:text-white/70'
+            }`}
           >
             Concluídos
           </button>
@@ -118,7 +125,7 @@ export default function Home() {
 
         {/* --- LISTA: PRÓXIMOS EVENTOS --- */}
         {abaAtiva === 'proximos' && (
-          <div className="space-y-4 animate-in fade-in duration-300">
+          <div className="space-y-4 animate-in fade-in duration-500">
             {eventosFuturos.length > 0 ? eventosFuturos.map(ev => (
               <div key={ev.id} className="relative group">
                 <Link href={`/menu-evento?id=${ev.id}`} className="block bg-white p-5 rounded-[30px] shadow-xl hover:scale-[1.01] transition-all">
@@ -141,7 +148,7 @@ export default function Home() {
 
         {/* --- LISTA: EVENTOS CONCLUÍDOS --- */}
         {abaAtiva === 'concluidos' && (
-          <div className="space-y-4 animate-in fade-in duration-300">
+          <div className="space-y-4 animate-in fade-in duration-500">
             {eventosPassados.length > 0 ? eventosPassados.map(ev => (
               <div key={ev.id} className="relative group opacity-90 hover:opacity-100 transition-opacity">
                 <Link href={`/menu-evento?id=${ev.id}`} className="block bg-gray-100 p-5 rounded-[30px] shadow-md hover:scale-[1.01] transition-all">
