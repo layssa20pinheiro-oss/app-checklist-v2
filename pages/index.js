@@ -17,6 +17,9 @@ export default function Home() {
   const [novoEvento, setNovoEvento] = useState({ nome: '', data: '' });
   const [isEditing, setIsEditing] = useState(false);
   const [eventToEdit, setEventToEdit] = useState(null);
+  
+  // ESTADO DAS ABINHAS ('proximos' ou 'concluidos')
+  const [abaAtiva, setAbaAtiva] = useState('proximos');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -79,12 +82,8 @@ export default function Home() {
   }
 
   // --- LÓGICA DE SEPARAÇÃO DAS DATAS ---
-  const hoje = new Date().toISOString().split('T')[0]; // Pega a data de hoje no formato YYYY-MM-DD
-  
-  // Eventos que não tem data OU a data é hoje ou no futuro
+  const hoje = new Date().toISOString().split('T')[0];
   const eventosFuturos = eventos.filter(ev => !ev.data || ev.data >= hoje);
-  
-  // Eventos que tem data E a data já passou
   const eventosPassados = eventos.filter(ev => ev.data && ev.data < hoje);
 
   return (
@@ -94,69 +93,79 @@ export default function Home() {
         
         <img src="https://rticfwqptlxkpgawpzwf.supabase.co/storage/v1/object/public/fotos/logo.png" className="max-w-[140px] mx-auto mb-10 mt-6" />
         
-        <div className="flex justify-between items-center mb-8 text-white font-bold uppercase tracking-[3px] text-sm">
+        <div className="flex justify-between items-center mb-6 text-white font-bold uppercase tracking-[3px] text-sm">
           <h1>Meus Eventos</h1>
           <button onClick={() => { setIsEditing(false); setNovoEvento({nome:'', data:''}); setShowModal(true); }} className="bg-[#ded0b8] p-2 rounded-xl shadow-lg hover:scale-105 transition-all">
              <Plus size={20}/>
           </button>
         </div>
 
-        {/* --- LISTA DE EVENTOS FUTUROS --- */}
-        <div className="mb-10">
-           <h2 className="text-white/50 font-bold text-[10px] uppercase tracking-widest mb-4 border-b border-white/10 pb-2">
-             Próximos Eventos
-           </h2>
-           <div className="space-y-4">
-             {eventosFuturos.length > 0 ? eventosFuturos.map(ev => (
-               <div key={ev.id} className="relative group">
-                 <Link href={`/menu-evento?id=${ev.id}`} className="block bg-white p-5 rounded-[30px] shadow-xl hover:scale-[1.01] transition-all">
-                   <h3 className="font-bold text-gray-700 uppercase text-xs pr-20">{ev.nome}</h3>
-                   <div className="flex gap-3 mt-2 text-[9px] text-gray-400 font-bold uppercase">
-                      <span className="flex items-center gap-1"><Calendar size={10} className="text-[#ded0b8]"/>{ev.data ? new Date(ev.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'Sem Data'}</span>
-                      <span className="flex items-center gap-1 text-[#8da38d]"><Users size={10} />{ev.convidados?.length || 0} Convidados</span>
-                   </div>
-                 </Link>
-                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
-                   <button onClick={() => { setEventToEdit(ev); setNovoEvento({nome: ev.nome, data: ev.data}); setIsEditing(true); setShowModal(true); }} className="text-gray-200 hover:text-[#ded0b8] p-2 transition-colors"><Edit2 size={16}/></button>
-                   <button onClick={(e) => deletarEvento(ev.id, e)} className="text-gray-200 hover:text-red-300 p-2 transition-colors"><Trash2 size={16}/></button>
-                 </div>
-               </div>
-             )) : (
-               <p className="text-white/40 italic text-xs py-4 text-center">Nenhum evento agendado.</p>
-             )}
-           </div>
+        {/* --- ABINHAS --- */}
+        <div className="flex bg-white/10 p-1 rounded-2xl mb-8">
+          <button 
+            onClick={() => setAbaAtiva('proximos')}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${abaAtiva === 'proximos' ? 'bg-white text-gray-700 shadow-md' : 'text-white/60 hover:text-white'}`}
+          >
+            Próximos
+          </button>
+          <button 
+            onClick={() => setAbaAtiva('concluidos')}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${abaAtiva === 'concluidos' ? 'bg-white text-gray-700 shadow-md' : 'text-white/60 hover:text-white'}`}
+          >
+            Concluídos
+          </button>
         </div>
 
-        {/* --- LISTA DE EVENTOS PASSADOS --- */}
-        {eventosPassados.length > 0 && (
-          <div>
-             <h2 className="text-white/50 font-bold text-[10px] uppercase tracking-widest mb-4 border-b border-white/10 pb-2">
-               Eventos Anteriores
-             </h2>
-             <div className="space-y-4">
-               {eventosPassados.map(ev => (
-                 <div key={ev.id} className="relative group opacity-80 hover:opacity-100 transition-opacity">
-                   <Link href={`/menu-evento?id=${ev.id}`} className="block bg-gray-100 p-5 rounded-[30px] shadow-md hover:scale-[1.01] transition-all">
-                     <h3 className="font-bold text-gray-500 uppercase text-xs pr-20">{ev.nome}</h3>
-                     <div className="flex gap-3 mt-2 text-[9px] text-gray-400 font-bold uppercase">
-                        <span className="flex items-center gap-1"><Calendar size={10} className="text-gray-400"/>{ev.data ? new Date(ev.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : '--/--'}</span>
-                        <span className="flex items-center gap-1"><Users size={10} />{ev.convidados?.length || 0} Convidados</span>
-                     </div>
-                   </Link>
-                   <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
-                     <button onClick={() => { setEventToEdit(ev); setNovoEvento({nome: ev.nome, data: ev.data}); setIsEditing(true); setShowModal(true); }} className="text-gray-300 hover:text-[#ded0b8] p-2 transition-colors"><Edit2 size={16}/></button>
-                     <button onClick={(e) => deletarEvento(ev.id, e)} className="text-gray-300 hover:text-red-300 p-2 transition-colors"><Trash2 size={16}/></button>
-                   </div>
-                 </div>
-               ))}
-             </div>
+        {/* --- LISTA: PRÓXIMOS EVENTOS --- */}
+        {abaAtiva === 'proximos' && (
+          <div className="space-y-4 animate-in fade-in duration-300">
+            {eventosFuturos.length > 0 ? eventosFuturos.map(ev => (
+              <div key={ev.id} className="relative group">
+                <Link href={`/menu-evento?id=${ev.id}`} className="block bg-white p-5 rounded-[30px] shadow-xl hover:scale-[1.01] transition-all">
+                  <h3 className="font-bold text-gray-700 uppercase text-xs pr-20">{ev.nome}</h3>
+                  <div className="flex gap-3 mt-2 text-[9px] text-gray-400 font-bold uppercase">
+                     <span className="flex items-center gap-1"><Calendar size={10} className="text-[#ded0b8]"/>{ev.data ? new Date(ev.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'Sem Data'}</span>
+                     <span className="flex items-center gap-1 text-[#8da38d]"><Users size={10} />{ev.convidados?.length || 0} Convidados</span>
+                  </div>
+                </Link>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
+                  <button onClick={() => { setEventToEdit(ev); setNovoEvento({nome: ev.nome, data: ev.data}); setIsEditing(true); setShowModal(true); }} className="text-gray-200 hover:text-[#ded0b8] p-2 transition-colors"><Edit2 size={16}/></button>
+                  <button onClick={(e) => deletarEvento(ev.id, e)} className="text-gray-200 hover:text-red-300 p-2 transition-colors"><Trash2 size={16}/></button>
+                </div>
+              </div>
+            )) : (
+              <p className="text-white/40 italic text-[10px] font-bold uppercase tracking-widest py-10 text-center">Nenhum evento agendado.</p>
+            )}
+          </div>
+        )}
+
+        {/* --- LISTA: EVENTOS CONCLUÍDOS --- */}
+        {abaAtiva === 'concluidos' && (
+          <div className="space-y-4 animate-in fade-in duration-300">
+            {eventosPassados.length > 0 ? eventosPassados.map(ev => (
+              <div key={ev.id} className="relative group opacity-90 hover:opacity-100 transition-opacity">
+                <Link href={`/menu-evento?id=${ev.id}`} className="block bg-gray-100 p-5 rounded-[30px] shadow-md hover:scale-[1.01] transition-all">
+                  <h3 className="font-bold text-gray-500 uppercase text-xs pr-20">{ev.nome}</h3>
+                  <div className="flex gap-3 mt-2 text-[9px] text-gray-400 font-bold uppercase">
+                     <span className="flex items-center gap-1"><Calendar size={10} className="text-gray-400"/>{ev.data ? new Date(ev.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : '--/--'}</span>
+                     <span className="flex items-center gap-1"><Users size={10} />{ev.convidados?.length || 0} Convidados</span>
+                  </div>
+                </Link>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
+                  <button onClick={() => { setEventToEdit(ev); setNovoEvento({nome: ev.nome, data: ev.data}); setIsEditing(true); setShowModal(true); }} className="text-gray-300 hover:text-[#ded0b8] p-2 transition-colors"><Edit2 size={16}/></button>
+                  <button onClick={(e) => deletarEvento(ev.id, e)} className="text-gray-300 hover:text-red-300 p-2 transition-colors"><Trash2 size={16}/></button>
+                </div>
+              </div>
+            )) : (
+              <p className="text-white/40 italic text-[10px] font-bold uppercase tracking-widest py-10 text-center">Nenhum evento concluído.</p>
+            )}
           </div>
         )}
 
         {/* MODAL DE NOVO/EDITAR EVENTO */}
         {showModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
-            <div className="bg-white w-full max-w-xs rounded-[35px] p-8 shadow-2xl">
+            <div className="bg-white w-full max-w-xs rounded-[35px] p-8 shadow-2xl animate-in zoom-in duration-200">
               <h2 className="text-center font-bold text-gray-500 uppercase text-xs mb-6 tracking-widest">{isEditing ? "Editar Evento" : "Novo Evento"}</h2>
               <input className="w-full border-b p-3 mb-4 outline-none text-sm" placeholder="Nome" value={novoEvento.nome} onChange={e=>setNovoEvento({...novoEvento, nome: e.target.value})} />
               <input type="date" className="w-full border-b p-3 mb-8 outline-none text-sm text-gray-400" value={novoEvento.data} onChange={e=>setNovoEvento({...novoEvento, data: e.target.value})} />
