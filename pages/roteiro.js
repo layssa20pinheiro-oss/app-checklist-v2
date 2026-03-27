@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Plus, Trash2, CheckSquare, Square, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, CheckSquare, Square, CheckCircle2, Sparkles, Loader2, Zap } from 'lucide-react';
 import Link from 'next/link';
 import Head from 'next/head';
 
@@ -19,7 +19,7 @@ export default function Roteiro() {
   const [abaAtiva, setAbaAtiva] = useState('cerimonia');
   
   const [showModal, setShowModal] = useState(false);
-  const [modoModal, setModoModal] = useState('manual');
+  const [modoModal, setModoModal] = useState('manual'); // 'manual', 'rapido' ou 'ia'
   const [novoItem, setNovoItem] = useState({ horario: '', atividade: '', detalhes: '' });
   const [textoRascunho, setTextoRascunho] = useState('');
   const [gerandoIA, setGerandoIA] = useState(false);
@@ -54,9 +54,9 @@ export default function Roteiro() {
     await supabase.from('roteiros').update({ concluido: !item.concluido }).eq('id', item.id);
   };
 
-  // --- O CÓDIGO DA IA COM DETECTOR DE ERRO ---
+  // --- PLANO A: A MÁGICA DA IA (Google) ---
   const organizarComIA = async () => {
-    if (!textoRascunho) return alert("Cole o rascunho do roteiro primeiro!");
+    if (!textoRascunho) return alert("Cole o rascunho primeiro!");
     setGerandoIA(true);
     try {
       const response = await fetch('/api/gerar-roteiro', {
@@ -64,16 +64,12 @@ export default function Roteiro() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ textoRascunho })
       });
-
       const data = await response.json();
-
-      // SE DEU ERRO, MOSTRA O MOTIVO EXATO:
       if (!response.ok) {
-        alert("Detalhe do Erro: " + data.error);
+        alert("Erro na IA: " + data.error);
         setGerandoIA(false);
         return;
       }
-      
       const itensParaSalvar = data.map(item => ({
         horario: item.horario || '00:00',
         atividade: item.atividade || 'Atividade',
@@ -82,15 +78,63 @@ export default function Roteiro() {
         evento_id: id,
         concluido: false
       }));
-
       await supabase.from('roteiros').insert(itensParaSalvar);
-      
       setTextoRascunho('');
       setShowModal(false);
       carregarRoteiro();
-      alert("✨ Mágica feita! Roteiro organizado com sucesso!");
+      alert("✨ Mágica feita! Roteiro organizado com IA!");
     } catch (error) {
       alert("Erro no aplicativo: " + error.message);
+    }
+    setGerandoIA(false);
+  };
+
+  // --- PLANO B: ORGANIZADOR RÁPIDO (Nosso Código) ---
+  const organizarRapido = async () => {
+    if (!textoRascunho) return alert("Cole o rascunho primeiro!");
+    setGerandoIA(true);
+    try {
+      // Divide o texto em linhas
+      const linhas = textoRascunho.split('\n').filter(l => l.trim() !== '');
+      
+      const itensParaSalvar = linhas.map(linha => {
+        // Tenta achar um horário no formato HH:MM ou HHhMM
+        const matchHorario = linha.match(/\b\d{1,2}[:h]\d{2}\b/i);
+        let horario = matchHorario ? matchHorario[0].replace('h', ':').replace('H', ':') : '00:00';
+        
+        // Remove o horário da linha para pegar o resto
+        let resto = linha.replace(matchHorario ? matchHorario[0] : '', '').trim();
+        resto = resto.replace(/^[-–:.\s]+/, ''); // Limpa traços no começo
+        
+        let atividade = resto;
+        let detalhes = '';
+        
+        // Se tiver um traço no meio, separa a atividade do detalhe
+        if (resto.includes('-')) {
+           const partes = resto.split('-');
+           atividade = partes[0].trim();
+           detalhes = partes.slice(1).join('-').trim();
+        }
+
+        return {
+          horario: horario,
+          atividade: atividade || 'Atividade',
+          detalhes: detalhes,
+          categoria: abaAtiva,
+          evento_id: id,
+          concluido: false
+        };
+      });
+
+      if (itensParaSalvar.length > 0) {
+        await supabase.from('roteiros').insert(itensParaSalvar);
+        setTextoRascunho('');
+        setShowModal(false);
+        carregarRoteiro();
+        alert("⚡ Roteiro organizado com Sucesso!");
+      }
+    } catch (error) {
+      alert("Erro ao organizar: " + error.message);
     }
     setGerandoIA(false);
   };
@@ -142,16 +186,18 @@ export default function Roteiro() {
           </div>
         )}
 
+        {/* MODAL COM AS 3 OPÇÕES */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white w-full max-w-sm rounded-[35px] p-6 shadow-2xl animate-in zoom-in duration-200">
               
               <div className="flex bg-gray-100 p-1 rounded-2xl mb-6">
-                <button onClick={() => setModoModal('manual')} className={`flex-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${modoModal === 'manual' ? 'bg-white text-gray-700 shadow-sm' : 'text-gray-400'}`}>Manual</button>
-                <button onClick={() => setModoModal('ia')} className={`flex-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${modoModal === 'ia' ? 'bg-gradient-to-r from-[#ded0b8] to-[#c4b59d] text-white shadow-sm' : 'text-gray-400'}`}><Sparkles size={12}/> IA Mágica</button>
+                <button onClick={() => setModoModal('manual')} className={`flex-1 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all ${modoModal === 'manual' ? 'bg-white text-gray-700 shadow-sm' : 'text-gray-400'}`}>Manual</button>
+                <button onClick={() => setModoModal('rapido')} className={`flex-1 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${modoModal === 'rapido' ? 'bg-[#7e7f7f] text-white shadow-sm' : 'text-gray-400'}`}><Zap size={12}/> Rápido</button>
+                <button onClick={() => setModoModal('ia')} className={`flex-1 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${modoModal === 'ia' ? 'bg-gradient-to-r from-[#ded0b8] to-[#c4b59d] text-white shadow-sm' : 'text-gray-400'}`}><Sparkles size={12}/> IA Mágica</button>
               </div>
 
-              {modoModal === 'manual' ? (
+              {modoModal === 'manual' && (
                 <div className="space-y-4 mb-6">
                   <div><label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Horário</label><input type="time" className="w-full border-b p-2 outline-none text-sm text-gray-700" value={novoItem.horario} onChange={e=>setNovoItem({...novoItem, horario: e.target.value})} /></div>
                   <div><label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Atividade</label><input type="text" className="w-full border-b p-2 outline-none text-sm text-gray-700" placeholder="Ex: Entrada dos Noivos" value={novoItem.atividade} onChange={e=>setNovoItem({...novoItem, atividade: e.target.value})} /></div>
@@ -161,15 +207,29 @@ export default function Roteiro() {
                     <button onClick={salvarItem} className="flex-2 bg-[#8da38d] text-white px-6 py-4 rounded-2xl font-bold uppercase text-[10px] shadow-lg flex justify-center items-center gap-1"><CheckCircle2 size={14}/> Salvar</button>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {modoModal === 'rapido' && (
                 <div className="space-y-4 mb-6">
-                  <p className="text-[10px] text-gray-500 italic text-center leading-tight">Cole o texto bagunçado. A IA organizará tudo em horários e categorias num piscar de olhos.</p>
-                  <textarea className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 outline-none text-xs text-gray-600 h-32" placeholder="Ex: 19h inicio, dps entrada dos pais tocando aleluia, 21h abre salão..." value={textoRascunho} onChange={e=>setTextoRascunho(e.target.value)}></textarea>
+                  <p className="text-[10px] text-gray-500 italic text-center leading-tight">Cole o roteiro com horários em cada linha e traços (Ex: 19:00 - Entrada - Música X). O app organizará na hora, sem depender de internet externa.</p>
+                  <textarea className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 outline-none text-xs text-gray-600 h-32" placeholder="Ex:&#10;19:00 - Entrada Pais&#10;19:15 - Entrada Noivo - Musica Y" value={textoRascunho} onChange={e=>setTextoRascunho(e.target.value)}></textarea>
+                  <div className="flex gap-2 pt-2">
+                    <button onClick={()=>setShowModal(false)} disabled={gerandoIA} className="flex-1 text-gray-400 font-bold text-[10px] uppercase">Sair</button>
+                    <button onClick={organizarRapido} disabled={gerandoIA} className="flex-2 bg-[#7e7f7f] text-white px-6 py-4 rounded-2xl font-bold uppercase text-[10px] shadow-lg flex justify-center items-center gap-2">
+                      {gerandoIA ? <Loader2 className="animate-spin" size={16}/> : <Zap size={16}/>} Gerar Rápido
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {modoModal === 'ia' && (
+                <div className="space-y-4 mb-6">
+                  <p className="text-[10px] text-gray-500 italic text-center leading-tight">Cole qualquer texto bagunçado. O Google usará a chave da API para organizar e classificar tudo.</p>
+                  <textarea className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 outline-none text-xs text-gray-600 h-32" placeholder="Cole o texto desorganizado aqui..." value={textoRascunho} onChange={e=>setTextoRascunho(e.target.value)}></textarea>
                   <div className="flex gap-2 pt-2">
                     <button onClick={()=>setShowModal(false)} disabled={gerandoIA} className="flex-1 text-gray-400 font-bold text-[10px] uppercase">Sair</button>
                     <button onClick={organizarComIA} disabled={gerandoIA} className="flex-2 bg-gradient-to-r from-[#ded0b8] to-[#c4b59d] text-white px-6 py-4 rounded-2xl font-bold uppercase text-[10px] shadow-lg flex justify-center items-center gap-2">
-                      {gerandoIA ? <Loader2 className="animate-spin" size={16}/> : <Sparkles size={16}/>}
-                      {gerandoIA ? "Mágica a acontecer..." : "Organizar com IA"}
+                      {gerandoIA ? <Loader2 className="animate-spin" size={16}/> : <Sparkles size={16}/>} IA Mágica
                     </button>
                   </div>
                 </div>
