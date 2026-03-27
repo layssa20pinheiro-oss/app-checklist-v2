@@ -15,11 +15,12 @@ export default function Roteiro() {
   const { id } = router.query;
   
   const [roteiro, setRoteiro] = useState([]);
+  const [eventoTipo, setEventoTipo] = useState('Casamento'); // NOVO: Guarda o tipo do evento
   const [loading, setLoading] = useState(true);
   const [abaAtiva, setAbaAtiva] = useState('cerimonia');
   
   const [showModal, setShowModal] = useState(false);
-  const [modoModal, setModoModal] = useState('manual'); // 'manual', 'rapido' ou 'ia'
+  const [modoModal, setModoModal] = useState('manual');
   const [novoItem, setNovoItem] = useState({ horario: '', atividade: '', detalhes: '' });
   const [textoRascunho, setTextoRascunho] = useState('');
   const [gerandoIA, setGerandoIA] = useState(false);
@@ -28,15 +29,28 @@ export default function Roteiro() {
 
   async function carregarRoteiro() {
     setLoading(true);
+    
+    // 1. Descobre qual é o tipo do evento
+    const { data: eventoData } = await supabase.from('eventos').select('tipo').eq('id', id).single();
+    if (eventoData && eventoData.tipo) {
+      setEventoTipo(eventoData.tipo);
+    }
+
+    // 2. Carrega o roteiro
     const { data } = await supabase.from('roteiros').select('*').eq('evento_id', id).order('horario', { ascending: true });
     if (data) setRoteiro(data);
+    
     setLoading(false);
   }
 
   const salvarItem = async () => {
     if (!novoItem.horario || !novoItem.atividade) return alert("Preencha o horário e a atividade!");
     setLoading(true);
-    await supabase.from('roteiros').insert([{ ...novoItem, categoria: abaAtiva, evento_id: id, concluido: false }]);
+    
+    // Se não for casamento, salva tudo como 'geral'
+    const categoriaSalvar = eventoTipo === 'Casamento' ? abaAtiva : 'geral';
+    
+    await supabase.from('roteiros').insert([{ ...novoItem, categoria: categoriaSalvar, evento_id: id, concluido: false }]);
     setNovoItem({ horario: '', atividade: '', detalhes: '' });
     setShowModal(false);
     carregarRoteiro();
@@ -54,7 +68,6 @@ export default function Roteiro() {
     await supabase.from('roteiros').update({ concluido: !item.concluido }).eq('id', item.id);
   };
 
-  // --- PLANO A: A MÁGICA DA IA (Google) ---
   const organizarComIA = async () => {
     if (!textoRascunho) return alert("Cole o rascunho primeiro!");
     setGerandoIA(true);
@@ -74,7 +87,7 @@ export default function Roteiro() {
         horario: item.horario || '00:00',
         atividade: item.atividade || 'Atividade',
         detalhes: item.detalhes || '',
-        categoria: item.categoria || abaAtiva,
+        categoria: eventoTipo === 'Casamento' ? (item.categoria || abaAtiva) : 'geral',
         evento_id: id,
         concluido: false
       }));
@@ -82,34 +95,24 @@ export default function Roteiro() {
       setTextoRascunho('');
       setShowModal(false);
       carregarRoteiro();
-      alert("✨ Mágica feita! Roteiro organizado com IA!");
     } catch (error) {
       alert("Erro no aplicativo: " + error.message);
     }
     setGerandoIA(false);
   };
 
-  // --- PLANO B: ORGANIZADOR RÁPIDO (Nosso Código) ---
   const organizarRapido = async () => {
     if (!textoRascunho) return alert("Cole o rascunho primeiro!");
     setGerandoIA(true);
     try {
-      // Divide o texto em linhas
       const linhas = textoRascunho.split('\n').filter(l => l.trim() !== '');
-      
       const itensParaSalvar = linhas.map(linha => {
-        // Tenta achar um horário no formato HH:MM ou HHhMM
         const matchHorario = linha.match(/\b\d{1,2}[:h]\d{2}\b/i);
         let horario = matchHorario ? matchHorario[0].replace('h', ':').replace('H', ':') : '00:00';
-        
-        // Remove o horário da linha para pegar o resto
-        let resto = linha.replace(matchHorario ? matchHorario[0] : '', '').trim();
-        resto = resto.replace(/^[-–:.\s]+/, ''); // Limpa traços no começo
+        let resto = linha.replace(matchHorario ? matchHorario[0] : '', '').trim().replace(/^[-–:.\s]+/, '');
         
         let atividade = resto;
         let detalhes = '';
-        
-        // Se tiver um traço no meio, separa a atividade do detalhe
         if (resto.includes('-')) {
            const partes = resto.split('-');
            atividade = partes[0].trim();
@@ -120,7 +123,7 @@ export default function Roteiro() {
           horario: horario,
           atividade: atividade || 'Atividade',
           detalhes: detalhes,
-          categoria: abaAtiva,
+          categoria: eventoTipo === 'Casamento' ? abaAtiva : 'geral',
           evento_id: id,
           concluido: false
         };
@@ -131,7 +134,6 @@ export default function Roteiro() {
         setTextoRascunho('');
         setShowModal(false);
         carregarRoteiro();
-        alert("⚡ Roteiro organizado com Sucesso!");
       }
     } catch (error) {
       alert("Erro ao organizar: " + error.message);
@@ -139,7 +141,8 @@ export default function Roteiro() {
     setGerandoIA(false);
   };
 
-  const itensExibidos = roteiro.filter(item => item.categoria === abaAtiva);
+  // INTELIGÊNCIA DE EXIBIÇÃO: Se for Casamento filtra pela aba. Se não for, mostra TUDO de uma vez!
+  const itensExibidos = eventoTipo === 'Casamento' ? roteiro.filter(item => item.categoria === abaAtiva) : roteiro;
 
   return (
     <div className="min-h-screen bg-[#7e7f7f] p-4 flex flex-col items-center font-sans pb-24 text-slate-800">
@@ -148,14 +151,19 @@ export default function Roteiro() {
         
         <div className="flex items-center justify-between mb-6 pt-4">
           <Link href={`/menu-evento?id=${id}`} className="bg-white/20 p-2 rounded-full text-white hover:bg-white/30 transition-all"><ArrowLeft size={20}/></Link>
-          <h1 className="text-white font-bold uppercase tracking-widest text-sm">Roteiro do Dia</h1>
+          <h1 className="text-white font-bold uppercase tracking-widest text-sm">
+             {eventoTipo === 'Casamento' ? 'Roteiro do Casamento' : `Roteiro - ${eventoTipo}`}
+          </h1>
           <button onClick={() => setShowModal(true)} className="bg-[#ded0b8] p-2 rounded-xl text-white shadow-lg active:scale-95 transition-all"><Plus size={20}/></button>
         </div>
 
-        <div className="flex gap-6 border-b border-white/10 mb-6 px-2">
-          <button onClick={() => setAbaAtiva('cerimonia')} className={`pb-3 text-[10px] font-bold uppercase tracking-[2px] transition-all duration-300 ${abaAtiva === 'cerimonia' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/40 hover:text-white/70'}`}>Cerimónia</button>
-          <button onClick={() => setAbaAtiva('recepcao')} className={`pb-3 text-[10px] font-bold uppercase tracking-[2px] transition-all duration-300 ${abaAtiva === 'recepcao' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/40 hover:text-white/70'}`}>Recepção</button>
-        </div>
+        {/* SÓ MOSTRA AS ABAS SE FOR CASAMENTO */}
+        {eventoTipo === 'Casamento' && (
+          <div className="flex gap-6 border-b border-white/10 mb-6 px-2">
+            <button onClick={() => setAbaAtiva('cerimonia')} className={`pb-3 text-[10px] font-bold uppercase tracking-[2px] transition-all duration-300 ${abaAtiva === 'cerimonia' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/40 hover:text-white/70'}`}>Cerimônia</button>
+            <button onClick={() => setAbaAtiva('recepcao')} className={`pb-3 text-[10px] font-bold uppercase tracking-[2px] transition-all duration-300 ${abaAtiva === 'recepcao' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/40 hover:text-white/70'}`}>Recepção</button>
+          </div>
+        )}
 
         {loading ? (
            <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#ded0b8]" size={30} /></div>
@@ -186,7 +194,7 @@ export default function Roteiro() {
           </div>
         )}
 
-        {/* MODAL COM AS 3 OPÇÕES */}
+        {/* MODAL */}
         {showModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white w-full max-w-sm rounded-[35px] p-6 shadow-2xl animate-in zoom-in duration-200">
@@ -200,7 +208,7 @@ export default function Roteiro() {
               {modoModal === 'manual' && (
                 <div className="space-y-4 mb-6">
                   <div><label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Horário</label><input type="time" className="w-full border-b p-2 outline-none text-sm text-gray-700" value={novoItem.horario} onChange={e=>setNovoItem({...novoItem, horario: e.target.value})} /></div>
-                  <div><label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Atividade</label><input type="text" className="w-full border-b p-2 outline-none text-sm text-gray-700" placeholder="Ex: Entrada dos Noivos" value={novoItem.atividade} onChange={e=>setNovoItem({...novoItem, atividade: e.target.value})} /></div>
+                  <div><label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Atividade</label><input type="text" className="w-full border-b p-2 outline-none text-sm text-gray-700" placeholder="Ex: Abertura da Pista" value={novoItem.atividade} onChange={e=>setNovoItem({...novoItem, atividade: e.target.value})} /></div>
                   <div><label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Detalhes</label><input type="text" className="w-full border-b p-2 outline-none text-xs text-gray-600" placeholder="Ex: Música X" value={novoItem.detalhes} onChange={e=>setNovoItem({...novoItem, detalhes: e.target.value})} /></div>
                   <div className="flex gap-2 pt-4">
                     <button onClick={()=>setShowModal(false)} className="flex-1 text-gray-400 font-bold text-[10px] uppercase">Sair</button>
@@ -211,8 +219,8 @@ export default function Roteiro() {
 
               {modoModal === 'rapido' && (
                 <div className="space-y-4 mb-6">
-                  <p className="text-[10px] text-gray-500 italic text-center leading-tight">Cole o roteiro com horários em cada linha e traços (Ex: 19:00 - Entrada - Música X). O app organizará na hora, sem depender de internet externa.</p>
-                  <textarea className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 outline-none text-xs text-gray-600 h-32" placeholder="Ex:&#10;19:00 - Entrada Pais&#10;19:15 - Entrada Noivo - Musica Y" value={textoRascunho} onChange={e=>setTextoRascunho(e.target.value)}></textarea>
+                  <p className="text-[10px] text-gray-500 italic text-center leading-tight">Cole o roteiro com horários e traços (Ex: 19:00 - Recepção - Música X).</p>
+                  <textarea className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 outline-none text-xs text-gray-600 h-32" placeholder="Ex:&#10;19:00 - Entrada Aniversariante&#10;19:15 - Valsa" value={textoRascunho} onChange={e=>setTextoRascunho(e.target.value)}></textarea>
                   <div className="flex gap-2 pt-2">
                     <button onClick={()=>setShowModal(false)} disabled={gerandoIA} className="flex-1 text-gray-400 font-bold text-[10px] uppercase">Sair</button>
                     <button onClick={organizarRapido} disabled={gerandoIA} className="flex-2 bg-[#7e7f7f] text-white px-6 py-4 rounded-2xl font-bold uppercase text-[10px] shadow-lg flex justify-center items-center gap-2">
@@ -224,7 +232,7 @@ export default function Roteiro() {
 
               {modoModal === 'ia' && (
                 <div className="space-y-4 mb-6">
-                  <p className="text-[10px] text-gray-500 italic text-center leading-tight">Cole qualquer texto bagunçado. O Google usará a chave da API para organizar e classificar tudo.</p>
+                  <p className="text-[10px] text-gray-500 italic text-center leading-tight">Cole qualquer texto bagunçado. A IA vai organizar tudo por você.</p>
                   <textarea className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 outline-none text-xs text-gray-600 h-32" placeholder="Cole o texto desorganizado aqui..." value={textoRascunho} onChange={e=>setTextoRascunho(e.target.value)}></textarea>
                   <div className="flex gap-2 pt-2">
                     <button onClick={()=>setShowModal(false)} disabled={gerandoIA} className="flex-1 text-gray-400 font-bold text-[10px] uppercase">Sair</button>
