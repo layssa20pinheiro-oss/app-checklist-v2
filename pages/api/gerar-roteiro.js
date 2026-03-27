@@ -8,14 +8,15 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'A chave da IA não foi encontrada no Vercel.' });
   }
 
+  // --- AQUI ESTÁ O PUXÃO DE ORELHA NA IA ---
   const prompt = `
     Você é um assistente de luxo para cerimonialistas de casamento.
-    Leia o texto bagunçado abaixo e extraia o roteiro do evento.
+    Leia o texto bagunçado abaixo e extraia o roteiro do evento na ordem exata em que os fatos acontecem.
     
     Regras:
     1. Retorne APENAS um array JSON válido, sem nenhum texto adicional, sem formatação markdown (sem \`\`\`json).
     2. Cada item deve ter:
-       - "horario": formato HH:MM (ex: 19:00). Se não tiver, tente deduzir a ordem ou deixe vazio.
+       - "horario": formato HH:MM (ex: 19:00). ATENÇÃO: NUNCA deixe vazio ou coloque 00:00. Se um item (como entradas do cortejo) não tiver horário especificado no texto, CALCULE o horário adicionando 1 ou 2 minutos em relação ao item anterior para manter a ordem cronológica perfeita.
        - "atividade": Título curto e elegante (ex: "Entrada do Noivo").
        - "detalhes": Informações extras (ex: música, quem acompanha). Se não tiver, deixe vazio "".
        - "categoria": classifique estritamente como "cerimonia" ou "recepcao".
@@ -25,7 +26,6 @@ export default async function handler(req, res) {
   `;
 
   try {
-    // --- CÉREBRO NOVO EXIGIDO PELO GOOGLE: gemini-2.5-flash ---
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
