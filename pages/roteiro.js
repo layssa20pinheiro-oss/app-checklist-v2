@@ -15,7 +15,7 @@ export default function Roteiro() {
   const { id } = router.query;
   
   const [roteiro, setRoteiro] = useState([]);
-  const [eventoTipo, setEventoTipo] = useState('Casamento'); // NOVO: Guarda o tipo do evento
+  const [eventoTipo, setEventoTipo] = useState('Casamento');
   const [loading, setLoading] = useState(true);
   const [abaAtiva, setAbaAtiva] = useState('cerimonia');
   
@@ -36,9 +36,26 @@ export default function Roteiro() {
       setEventoTipo(eventoData.tipo);
     }
 
-    // 2. Carrega o roteiro
-    const { data } = await supabase.from('roteiros').select('*').eq('evento_id', id).order('horario', { ascending: true });
-    if (data) setRoteiro(data);
+    // 2. Carrega o roteiro SEM ordenar pelo banco de dados
+    const { data } = await supabase.from('roteiros').select('*').eq('evento_id', id);
+    
+    if (data) {
+      // --- A INTELIGÊNCIA DA MADRUGADA ENTRA AQUI ---
+      const dadosOrdenados = data.sort((a, b) => {
+        const valorTempo = (horario) => {
+          if (!horario) return 0;
+          let [h, m] = horario.split(':').map(Number);
+          // Se for madrugada (entre 00:00 e 05:59), soma 24h para ir pro final da lista
+          if (h >= 0 && h <= 5) {
+             h += 24;
+          }
+          return (h * 60) + (m || 0);
+        };
+        return valorTempo(a.horario) - valorTempo(b.horario);
+      });
+      
+      setRoteiro(dadosOrdenados);
+    }
     
     setLoading(false);
   }
@@ -46,10 +63,7 @@ export default function Roteiro() {
   const salvarItem = async () => {
     if (!novoItem.horario || !novoItem.atividade) return alert("Preencha o horário e a atividade!");
     setLoading(true);
-    
-    // Se não for casamento, salva tudo como 'geral'
     const categoriaSalvar = eventoTipo === 'Casamento' ? abaAtiva : 'geral';
-    
     await supabase.from('roteiros').insert([{ ...novoItem, categoria: categoriaSalvar, evento_id: id, concluido: false }]);
     setNovoItem({ horario: '', atividade: '', detalhes: '' });
     setShowModal(false);
@@ -141,7 +155,6 @@ export default function Roteiro() {
     setGerandoIA(false);
   };
 
-  // INTELIGÊNCIA DE EXIBIÇÃO: Se for Casamento filtra pela aba. Se não for, mostra TUDO de uma vez!
   const itensExibidos = eventoTipo === 'Casamento' ? roteiro.filter(item => item.categoria === abaAtiva) : roteiro;
 
   return (
@@ -157,7 +170,6 @@ export default function Roteiro() {
           <button onClick={() => setShowModal(true)} className="bg-[#ded0b8] p-2 rounded-xl text-white shadow-lg active:scale-95 transition-all"><Plus size={20}/></button>
         </div>
 
-        {/* SÓ MOSTRA AS ABAS SE FOR CASAMENTO */}
         {eventoTipo === 'Casamento' && (
           <div className="flex gap-6 border-b border-white/10 mb-6 px-2">
             <button onClick={() => setAbaAtiva('cerimonia')} className={`pb-3 text-[10px] font-bold uppercase tracking-[2px] transition-all duration-300 ${abaAtiva === 'cerimonia' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/40 hover:text-white/70'}`}>Cerimônia</button>
@@ -194,7 +206,6 @@ export default function Roteiro() {
           </div>
         )}
 
-        {/* MODAL */}
         {showModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white w-full max-w-sm rounded-[35px] p-6 shadow-2xl animate-in zoom-in duration-200">
