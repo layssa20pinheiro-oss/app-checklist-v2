@@ -1,8 +1,9 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ClipboardList, Users, History, ArrowLeft, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Clock, ClipboardCheck, Users, History, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import Head from 'next/head';
 
 const supabase = createClient(
   'https://rticfwqptlxkpgawpzwf.supabase.co',
@@ -16,61 +17,77 @@ export default function MenuEvento() {
 
   useEffect(() => {
     if (id) {
-      supabase.from('eventos').select('*').eq('id', id).single().then(({ data }) => setEvento(data));
+      supabase.from('eventos').select('*').eq('id', id).single().then(({ data }) => {
+        if (data) setEvento(data);
+      });
     }
   }, [id]);
 
-  if (!evento) return null;
-
   return (
-    <div className="min-h-screen bg-[#7e7f7f] p-6 flex flex-col items-center font-sans">
+    <div className="min-h-screen bg-[#7e7f7f] p-6 font-sans flex flex-col items-center pb-20">
+      <Head><title>Menu do Evento | Cerimonial Elite</title></Head>
       <div className="w-full max-w-md animate-in fade-in duration-500">
         
-        <Link href="/" className="bg-white/10 p-2 rounded-full text-white inline-block mb-6 hover:bg-white/20 transition-all">
-          <ArrowLeft size={20}/>
-        </Link>
-        
-        <div className="text-center text-white mb-10">
-          <h1 className="font-bold uppercase tracking-[4px] text-lg">{evento.nome}</h1>
-          <p className="text-[10px] opacity-60 uppercase font-bold mt-1 tracking-widest flex items-center justify-center gap-2">
-            <Calendar size={12}/> {evento.data ? new Date(evento.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'Data não informada'}
-          </p>
+        {/* CABEÇALHO */}
+        <div className="flex items-center mb-8 pt-4">
+          <Link href="/" className="bg-white/20 p-3 rounded-full text-white hover:bg-white/30 transition-all shadow-sm">
+            <ArrowLeft size={20}/>
+          </Link>
         </div>
 
-        <div className="space-y-4">
+        {/* TÍTULO DO EVENTO */}
+        <div className="text-center mb-10">
+          <h1 className="text-white font-bold uppercase tracking-[4px] text-xl mb-2">
+            {evento ? evento.nome : 'Carregando...'}
+          </h1>
+          {evento?.data && (
+            <div className="flex items-center justify-center gap-2 text-[#ded0b8] text-xs font-bold tracking-widest uppercase">
+              <Calendar size={14} />
+              {new Date(evento.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}
+            </div>
+          )}
+        </div>
+
+        {/* MENU DE CARTÕES PADRONIZADOS */}
+        <div className="space-y-5">
           
-          {/* BOTÃO NOVO: ROTEIRO DO DIA */}
-          <Link href={`/roteiro?id=${id}`} className="bg-white p-6 rounded-[35px] shadow-xl flex items-center gap-4 text-left group hover:scale-[1.02] transition-all border-l-4 border-[#ded0b8]">
-            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><Clock /></div>
+          {/* 1. Roteiro */}
+          <Link href={`/roteiro?id=${id}`} className="bg-white rounded-[35px] p-5 flex items-center gap-5 shadow-xl hover:scale-[1.02] transition-all">
+            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><Clock size={28} /></div>
             <div>
-              <h3 className="font-bold text-gray-700 uppercase tracking-widest text-sm">Roteiro do Dia</h3>
-              <p className="text-[10px] text-gray-400 uppercase tracking-tighter italic">Cronograma, Cortejo e Festa</p>
+              <h2 className="text-slate-700 font-bold uppercase tracking-widest text-[13px] mb-1">Roteiro do Dia</h2>
+              <p className="text-gray-400 italic text-[10px] uppercase tracking-wider">Cronograma e Festa</p>
             </div>
           </Link>
 
-          <div className="bg-white rounded-[35px] p-2 shadow-xl mt-4">
-             <Link href={`/checklist?id=${id}`} className="w-full p-6 flex items-center gap-4 text-left hover:bg-gray-50 rounded-[30px] transition-all">
-                <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><ClipboardList /></div>
-                <div>
-                  <h3 className="font-bold text-gray-700 uppercase tracking-widest text-sm">Novo Relatório</h3>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-tighter italic">Checklist de Saída</p>
-                </div>
-             </Link>
-             <Link href={`/historico?id=${id}`} className="flex items-center justify-center gap-2 py-4 border-t border-gray-50 text-[#ded0b8] hover:text-[#c4b59d] transition-colors">
-                <History size={16} />
-                <span className="text-[10px] font-bold uppercase tracking-[2px]">Acessar Histórico</span>
-             </Link>
-          </div>
-
-          <Link href={`/lista?id=${id}`} className="bg-white p-6 rounded-[35px] shadow-xl flex items-center gap-4 text-left group hover:scale-[1.02] transition-all">
-            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><Users /></div>
+          {/* 2. Novo Relatório */}
+          <Link href={`/checklist?id=${id}`} className="bg-white rounded-[35px] p-5 flex items-center gap-5 shadow-xl hover:scale-[1.02] transition-all">
+            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><ClipboardCheck size={28} /></div>
             <div>
-              <h3 className="font-bold text-gray-700 uppercase tracking-widest text-sm">Gestão de Convidados</h3>
-              <p className="text-[10px] text-gray-400 uppercase tracking-tighter italic">Lista, RSVP e Portaria</p>
+              <h2 className="text-slate-700 font-bold uppercase tracking-widest text-[13px] mb-1">Novo Relatório</h2>
+              <p className="text-gray-400 italic text-[10px] uppercase tracking-wider">Checklist de Saída</p>
             </div>
           </Link>
+
+          {/* 3. Histórico (Agora em um cartão igual aos outros!) */}
+          <Link href={`/historico?id=${id}`} className="bg-white rounded-[35px] p-5 flex items-center gap-5 shadow-xl hover:scale-[1.02] transition-all">
+            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><History size={28} /></div>
+            <div>
+              <h2 className="text-slate-700 font-bold uppercase tracking-widest text-[13px] mb-1">Acessar Histórico</h2>
+              <p className="text-gray-400 italic text-[10px] uppercase tracking-wider">Relatórios Anteriores</p>
+            </div>
+          </Link>
+
+          {/* 4. Gestão de Convidados */}
+          <Link href={`/lista?id=${id}`} className="bg-white rounded-[35px] p-5 flex items-center gap-5 shadow-xl hover:scale-[1.02] transition-all">
+            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><Users size={28} /></div>
+            <div>
+              <h2 className="text-slate-700 font-bold uppercase tracking-widest text-[13px] mb-1">Convidados</h2>
+              <p className="text-gray-400 italic text-[10px] uppercase tracking-wider">Gestão e Portaria</p>
+            </div>
+          </Link>
+
         </div>
-
       </div>
     </div>
   );
