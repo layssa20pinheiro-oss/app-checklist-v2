@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'A chave da IA (GEMINI_API_KEY) não foi encontrada no Vercel.' });
+    return res.status(500).json({ error: 'A chave da IA não foi encontrada no Vercel.' });
   }
 
   const prompt = `
@@ -25,8 +25,8 @@ export default async function handler(req, res) {
   `;
 
   try {
-    // Voltamos para o modelo oficial e mais estável (gemini-1.5-flash)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // --- O CÉREBRO NOVO E ATIVO DO GOOGLE: gemini-2.0-flash ---
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -36,16 +36,8 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // TRADUTOR DE ERROS DO GOOGLE
     if (!response.ok) {
-      let erroGringo = data.error?.message || 'Erro desconhecido';
-      let erroTraduzido = "O Google recusou o pedido.";
-      
-      if (erroGringo.includes("API key not valid")) {
-        erroTraduzido = "A sua Chave da IA está incorreta. Verifique se não copiou com algum espaço em branco no final lá no Vercel.";
-      }
-      
-      return res.status(500).json({ error: erroTraduzido });
+      return res.status(500).json({ error: `Erro do Google: ${data.error?.message || 'Desconhecido'}` });
     }
 
     let respostaIA = data.candidates[0].content.parts[0].text;
