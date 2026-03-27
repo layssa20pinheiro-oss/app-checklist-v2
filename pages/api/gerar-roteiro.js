@@ -25,8 +25,8 @@ export default async function handler(req, res) {
   `;
 
   try {
-    // --- O CÉREBRO NOVO E ATIVO DO GOOGLE: gemini-2.0-flash ---
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    // --- CÉREBRO NOVO EXIGIDO PELO GOOGLE: gemini-2.5-flash ---
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
