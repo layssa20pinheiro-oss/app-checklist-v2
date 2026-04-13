@@ -1,7 +1,8 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Clock, ClipboardCheck, Users, Calendar } from 'lucide-react';
+// MÁGICA: Adicionei o ícone "FileText" aqui em cima!
+import { ArrowLeft, Clock, ClipboardCheck, Users, Calendar, FileText } from 'lucide-react';
 import Link from 'next/link';
 import Head from 'next/head';
 
@@ -51,6 +52,15 @@ export default function MenuEvento() {
         {/* MENU DE CARTÕES PADRONIZADOS */}
         <div className="space-y-4">
           
+          {/* --- NOVO BOTÃO DA FICHA TÉCNICA AQUI! --- */}
+          <Link href={`/ficha?id=${id}`} className="bg-white rounded-[35px] p-4 flex items-center gap-4 shadow-xl hover:scale-[1.02] transition-all">
+            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><FileText size={24} /></div>
+            <div>
+              <h2 className="text-slate-700 font-bold uppercase tracking-widest text-[12px] mb-1">Ficha Técnica</h2>
+              <p className="text-gray-400 italic text-[10px] uppercase tracking-wider">Fornecedores e Cerimônia</p>
+            </div>
+          </Link>
+
           <Link href={`/roteiro?id=${id}`} className="bg-white rounded-[35px] p-4 flex items-center gap-4 shadow-xl hover:scale-[1.02] transition-all">
             <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><Clock size={24} /></div>
             <div>
