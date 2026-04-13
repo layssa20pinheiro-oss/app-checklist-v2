@@ -1,7 +1,3 @@
-// No topo do index.js, perto do título "Meus Eventos"
-<Link href="/configuracoes" className="text-white/30 hover:text-[#ded0b8] transition-all">
-  <Settings size={20} />
-</Link>
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Plus, Calendar, Trash2, Users, Edit2, Bookmark, Settings } from 'lucide-react';
@@ -18,7 +14,6 @@ export default function Home() {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  // Agora o evento já nasce sabendo que o padrão é Casamento
   const [novoEvento, setNovoEvento] = useState({ nome: '', data: '', tipo: 'Casamento' });
   const [isEditing, setIsEditing] = useState(false);
   const [eventToEdit, setEventToEdit] = useState(null);
@@ -97,9 +92,15 @@ export default function Home() {
         <img src="https://rticfwqptlxkpgawpzwf.supabase.co/storage/v1/object/public/fotos/logo.png" className="max-w-[140px] mx-auto mb-10 mt-6" />
         
         <div className="flex justify-between items-center mb-8 text-white font-bold uppercase tracking-[3px] text-sm">
-          <h1>Meus Eventos</h1>
+          <div className="flex items-center gap-3">
+            <h1>Meus Eventos</h1>
+            {/* O BOTÃO DE CONFIGURAÇÕES ENTROU AQUI NO LUGAR CERTO */}
+            <Link href="/configuracoes" className="text-white/30 hover:text-[#ded0b8] transition-all">
+              <Settings size={18} />
+            </Link>
+          </div>
           <button onClick={() => { setIsEditing(false); setNovoEvento({nome:'', data:'', tipo: 'Casamento'}); setShowModal(true); }} className="bg-[#ded0b8] p-2 rounded-xl shadow-lg hover:scale-105 transition-all">
-             <Plus size={20}/>
+              <Plus size={20}/>
           </button>
         </div>
 
@@ -108,7 +109,6 @@ export default function Home() {
           <button onClick={() => setAbaAtiva('concluidos')} className={`pb-3 text-[10px] font-bold uppercase tracking-[2px] transition-all duration-300 ${abaAtiva === 'concluidos' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/40 hover:text-white/70'}`}>Concluídos</button>
         </div>
 
-        {/* --- LISTA DE EVENTOS --- */}
         <div className="space-y-4 animate-in fade-in duration-500">
           {(abaAtiva === 'proximos' ? eventosFuturos : eventosPassados).length > 0 ? (
             (abaAtiva === 'proximos' ? eventosFuturos : eventosPassados).map(ev => (
@@ -118,7 +118,6 @@ export default function Home() {
                   <div className="flex flex-wrap gap-3 mt-3 text-[9px] text-gray-400 font-bold uppercase">
                      <span className="flex items-center gap-1"><Calendar size={10} className={abaAtiva === 'concluidos' ? 'text-gray-400' : 'text-[#ded0b8]'}/>{ev.data ? new Date(ev.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'Sem Data'}</span>
                      <span className="flex items-center gap-1"><Users size={10} className={abaAtiva === 'concluidos' ? 'text-gray-400' : 'text-[#8da38d]'} />{ev.convidados?.length || 0} Convidados</span>
-                     {/* Nova etiqueta com o TIPO DO EVENTO */}
                      <span className="flex items-center gap-1 text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full"><Bookmark size={10} /> {ev.tipo || 'Casamento'}</span>
                   </div>
                 </Link>
@@ -133,7 +132,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* --- MODAL COM ESCOLHA DO TIPO --- */}
         {showModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
             <div className="bg-white w-full max-w-sm rounded-[35px] p-8 shadow-2xl animate-in zoom-in duration-200">
