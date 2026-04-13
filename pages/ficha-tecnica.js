@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Save, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Head from 'next/head';
 
@@ -53,19 +53,19 @@ export default function FichaTecnica() {
   };
 
   const ItemFornecedor = ({ idCampo, label }) => (
-    <div className="flex items-center gap-4 p-4 bg-gray-50/50 border border-gray-100 rounded-2xl mb-3">
+    <div className="flex items-center gap-4 p-4 bg-[#7e7f7f]/5 border border-[#7e7f7f]/10 rounded-[20px] mb-3">
       <input 
         type="checkbox" 
-        className="w-5 h-5 accent-[#8da38d] rounded-lg border-gray-300"
+        className="w-5 h-5 accent-[#ded0b8] rounded-lg border-gray-300"
         checked={dadosFicha[`${idCampo}_check`] || false}
         onChange={() => handleCheck(`${idCampo}_check`)}
       />
       <div className="flex-1">
-        <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{label}</label>
+        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{label}</label>
         <input 
           type="text" 
-          placeholder="Nome da Empresa ou Contato" 
-          className="w-full border-none bg-transparent focus:ring-0 text-gray-700 p-0 text-xs placeholder:text-gray-300 font-medium"
+          placeholder="Nome da Empresa / Contato" 
+          className="w-full border-none bg-transparent focus:ring-0 text-gray-700 p-0 text-sm placeholder:text-gray-300 font-medium font-sans"
           value={dadosFicha[idCampo] || ""}
           onChange={(e) => handleChange(idCampo, e.target.value)}
         />
@@ -74,53 +74,54 @@ export default function FichaTecnica() {
   );
 
   if (!evento) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#7e7f7f]">
-      <div className="text-white/50 font-sans animate-pulse uppercase tracking-widest text-[10px]">Carregando Ficha...</div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-gray-500 font-sans animate-pulse uppercase tracking-widest text-[10px]">Carregando Ficha...</div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#7e7f7f] font-sans pb-24">
+    <div className="min-h-screen bg-white font-sans pb-24">
       <Head><title>Ficha Técnica | {evento.nome}</title></Head>
 
-      {/* HEADER */}
-      <div className="pt-12 pb-6 px-6 text-white">
+      {/* HEADER IDÊNTICO À IMAGEM, MAS CINZA */}
+      <div className="bg-[#7e7f7f] pt-12 pb-10 px-6 text-white rounded-b-[30px] shadow-lg">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button onClick={() => router.back()} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition">
-            <ArrowLeft size={20} />
+            <ArrowLeft size={24} className="text-[#ded0b8]" />
           </button>
-          <h1 className="text-sm font-bold uppercase tracking-[3px]">Ficha Técnica</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Ficha Técnica</h1>
           <button 
             onClick={salvarFicha} 
             disabled={salvando}
-            className="bg-[#ded0b8] p-2 rounded-xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
+            className="bg-[#ded0b8] p-3 rounded-full shadow-lg active:scale-95 transition-all disabled:opacity-50"
           >
-            {salvando ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+            {salvando ? <Loader2 size={24} className="animate-spin text-white" /> : <Save size={24} className="text-white" />}
           </button>
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-6">
-        {/* ABAS ESTILO PÍLULA */}
-        <div className="flex bg-white/10 rounded-2xl p-1 mb-6 border border-white/5">
+      <div className="max-w-md mx-auto px-6 mt-8">
+        
+        {/* ABAS IDÊNTICAS À IMAGEM, MAS CINZA/NUDE */}
+        <div className="flex bg-[#7e7f7f]/5 rounded-[20px] p-2 mb-8 border border-[#7e7f7f]/10 shadow-inner">
           <button 
             onClick={() => setAbaAtiva("fornecedores")} 
-            className={`flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${abaAtiva === "fornecedores" ? "bg-white text-gray-700 shadow-sm" : "text-white/40"}`}
+            className={`flex-1 py-4 rounded-[15px] font-bold text-xs uppercase tracking-widest transition-all ${abaAtiva === "fornecedores" ? "bg-[#7e7f7f] text-white shadow-md" : "text-gray-400 hover:text-gray-600"}`}
           >
             Fornecedores
           </button>
           <button 
             onClick={() => setAbaAtiva("cerimonia")} 
-            className={`flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${abaAtiva === "cerimonia" ? "bg-white text-gray-700 shadow-sm" : "text-white/40"}`}
+            className={`flex-1 py-4 rounded-[15px] font-bold text-xs uppercase tracking-widest transition-all ${abaAtiva === "cerimonia" ? "bg-[#7e7f7f] text-white shadow-md" : "text-gray-400 hover:text-gray-600"}`}
           >
             Cerimônia
           </button>
         </div>
 
-        <div className="bg-white rounded-[35px] p-6 shadow-2xl animate-in fade-in duration-500">
+        <div className="bg-gray-50 rounded-[35px] p-8 shadow-inner border border-gray-100 animate-in fade-in duration-500">
           {abaAtiva === "fornecedores" ? (
             <div className="space-y-1">
-               <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-[2px] mb-4 text-center">Checklist de Contatos</h2>
+               <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-[3px] mb-6 text-center">Contatos do Evento</h2>
               <ItemFornecedor idCampo="f_local" label="LOCAL DO EVENTO" />
               <ItemFornecedor idCampo="f_buffet" label="BUFFET" />
               <ItemFornecedor idCampo="f_foto" label="FOTOGRAFIA" />
@@ -130,24 +131,24 @@ export default function FichaTecnica() {
               <ItemFornecedor idCampo="f_bar" label="BARTENDER" />
             </div>
           ) : (
-            <div className="space-y-6 py-4">
-              <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-[2px] mb-2 text-center">Detalhes do Rito</h2>
-              <div className="border-b border-gray-100 pb-2">
-                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Votos dos Noivos / Aniversariante</label>
+            <div className="space-y-8 py-4">
+              <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-[3px] mb-4 text-center">Detalhes da Cerimônia</h2>
+              <div className="border border-gray-200 bg-white p-6 rounded-[20px] shadow-sm">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Votos dos Noivos / Aniversariante</label>
                 <input 
                   type="text" 
                   placeholder="Ex: Terão votos próprios"
-                  className="w-full border-none p-0 focus:ring-0 text-sm text-gray-700 mt-1" 
+                  className="w-full border-b border-gray-100 p-0 focus:ring-0 text-base text-gray-700 mt-2 font-medium font-sans placeholder:text-gray-300" 
                   value={dadosFicha.c_votos || ""} 
                   onChange={e => handleChange("c_votos", e.target.value)} 
                 />
               </div>
-              <div className="border-b border-gray-100 pb-2">
-                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Quantidade de Cadeiras / Layout</label>
+              <div className="border border-gray-200 bg-white p-6 rounded-[20px] shadow-sm">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quantidade de Cadeiras / Layout</label>
                 <input 
                   type="text" 
                   placeholder="Ex: 150 cadeiras tiffany"
-                  className="w-full border-none p-0 focus:ring-0 text-sm text-gray-700 mt-1" 
+                  className="w-full border-b border-gray-100 p-0 focus:ring-0 text-base text-gray-700 mt-2 font-medium font-sans placeholder:text-gray-300" 
                   value={dadosFicha.c_cadeiras || ""} 
                   onChange={e => handleChange("c_cadeiras", e.target.value)} 
                 />
