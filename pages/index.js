@@ -4,7 +4,7 @@
 </Link>
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Plus, Calendar, Trash2, Users, Edit2, Bookmark } from 'lucide-react';
+import { Plus, Calendar, Trash2, Users, Edit2, Bookmark, Settings } from 'lucide-react';
 import Link from 'next/link';
 import Head from 'next/head';
 
