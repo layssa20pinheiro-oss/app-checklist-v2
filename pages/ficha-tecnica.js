@@ -113,16 +113,42 @@ export default function FichaTecnica() {
         {/* CONTEÚDO DINÂMICO POR ABA */}
         <div className="mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           
-          {abaAtiva === "fornecedores" && (
-            <div className="space-y-1">
-              <Campo idCampo="f_local" label="Local Cerimônia/Recepção" />
-              <Campo idCampo="f_buffet" label="Buffet" />
-              <Campo idCampo="f_foto" label="Fotografia/Filmagem" />
-              <Campo idCampo="f_musica" label="DJ/Banda/Músicos" />
-              <Campo idCampo="f_visual" label="Vestido/Terno/Dia da Noiva" />
-              <Campo idCampo="f_outros" label="Bartender/Convites/Carro" />
-            </div>
-          )}
+         {abaAtiva === "fornecedores" && (
+  <div className="space-y-1 animate-in fade-in duration-500">
+    <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-[3px] mb-6 text-center">Gestão de Fornecedores</h2>
+    
+    {/* Campos extraídos diretamente do PDF [cite: 9] */}
+    <Campo idCampo="f_cerimonia" label="Cerimônia" />
+    <Campo idCampo="f_recepcao" label="Recepção" />
+    <Campo idCampo="f_convidados" label="Quantidade de Convidados" />
+    <Campo idCampo="f_buffet" label="Buffet" />
+    <Campo idCampo="f_decor_igreja" label="Decoração Igreja" />
+    <Campo idCampo="f_decor_recepcao" label="Decoração Recepção" />
+    <Campo idCampo="f_iluminacao" label="Iluminação Decorativa" />
+    <Campo idCampo="f_dj" label="DJ / Estrutura" />
+    <Campo idCampo="f_banda1" label="Banda 1" />
+    <Campo idCampo="f_banda2" label="Banda 2" />
+    <Campo idCampo="f_musicos_cerimonia" label="Músicos da Cerimônia" />
+    <Campo idCampo="f_foto" label="Fotografia" />
+    <Campo idCampo="f_filme" label="Filmagem" />
+    <Campo idCampo="f_storymaker" label="Storymaker" />
+    <Campo idCampo="f_vestido" label="Vestido" />
+    <Campo idCampo="f_terno" label="Terno" />
+    <Campo idCampo="f_dia_noiva" label="Dia da Noiva" />
+    <Campo idCampo="f_dia_noivo" label="Dia do Noivo" />
+    <Campo idCampo="f_convites" label="Convites" />
+    <Campo idCampo="f_bartender" label="Bartender" />
+    
+    {/* Continuação dos campos [cite: 10] */}
+    <Campo idCampo="f_doces" label="Doces" />
+    <Campo idCampo="f_bolo" label="Bolo" />
+    <Campo idCampo="f_bolo_fake" label="Bolo Fake" />
+    <Campo idCampo="f_bem_casados" label="Bem Casados" />
+    <Campo idCampo="f_carro" label="Carro" />
+    <Campo idCampo="f_locacao" label="Locação" />
+    <Campo idCampo="f_atracoes" label="Atrações" />
+  </div>
+)}
 
           {abaAtiva === "cerimonia" && (
             <div className="space-y-1">
