@@ -9,7 +9,7 @@ const supabase = createClient(
  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0aWNmd3FwdGx4a3BnYXdwendmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDA2MTEsImV4cCI6MjA4OTQxNjYxMX0.vOmi-rKKxXuZ5SP7uZe81Cr0fKW_fWN4Hmuf90soijM'
 );
 
-// --- COMPONENTE CAMPO (MOVIDO PARA FORA PARA CORRIGIR O TECLADO) ---
+// Componente Campo movido para fora para estabilidade do teclado
 const Campo = ({ idCampo, defaultLabel, value, checked, onValueChange, onCheckChange, onLabelChange, customLabel }) => {
   const [editandoNome, setEditandoNome] = useState(false);
   const labelExibida = customLabel || defaultLabel;
@@ -98,31 +98,44 @@ export default function FichaTecnica() {
     <div className="min-h-screen bg-gray-50 font-sans pb-32">
       <Head><title>Ficha Técnica | {evento.nome}</title></Head>
 
-      <div className="bg-[#7e7f7f] pt-12 pb-8 px-6 text-white rounded-b-[40px] shadow-lg sticky top-0 z-20">
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          <button onClick={() => router.back()} className="p-2 bg-white/10 rounded-full"><ArrowLeft size={20} className="text-[#ded0b8]" /></button>
-          <div className="text-center">
-             <h1 className="text-xl font-bold tracking-tight">Ficha Técnica</h1>
-             <p className="text-[9px] uppercase tracking-[2px] text-white/50">{evento.nome}</p>
+      {/* BLOCO DE NAVEGAÇÃO FIXO (STICKY) */}
+      <div className="bg-[#7e7f7f] pt-12 pb-4 px-6 text-white rounded-b-[40px] shadow-lg sticky top-0 z-20">
+        <div className="max-w-md mx-auto">
+          {/* Header Superior */}
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={() => router.back()} className="p-2 bg-white/10 rounded-full"><ArrowLeft size={20} className="text-[#ded0b8]" /></button>
+            <div className="text-center">
+               <h1 className="text-lg font-bold tracking-tight uppercase">Ficha Técnica</h1>
+               <p className="text-[8px] uppercase tracking-[2px] text-white/50">{evento.nome}</p>
+            </div>
+            <button onClick={salvarFicha} disabled={salvando} className="bg-[#ded0b8] p-3 rounded-2xl shadow-lg active:scale-95 transition-all">
+              {salvando ? <Loader2 size={20} className="animate-spin text-white" /> : <Save size={20} className="text-white" />}
+            </button>
           </div>
-          <button onClick={salvarFicha} disabled={salvando} className="bg-[#ded0b8] p-3 rounded-2xl shadow-lg active:scale-95 transition-all">
-            {salvando ? <Loader2 size={20} className="animate-spin text-white" /> : <Save size={20} className="text-white" />}
-          </button>
+
+          {/* Barra de Abas Fixa */}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+            {[
+              { id: "fornecedores", nome: "Fornecedores" },
+              { id: "cerimonia", nome: "Cerimônia" },
+              { id: "recepcao", nome: "Recepção" },
+              { id: "decoracao", nome: "Decoração" },
+              { id: "buffet", nome: "Buffet" },
+              { id: "tecnico", nome: "Técnico" }
+            ].map(aba => (
+              <button 
+                key={aba.id} 
+                onClick={() => setAbaAtiva(aba.id)} 
+                className={`px-5 py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all whitespace-nowrap ${abaAtiva === aba.id ? "bg-white text-[#7e7f7f] shadow-md" : "bg-white/10 text-white/40"}`}
+              >
+                {aba.nome}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="max-w-md mx-auto mt-6 px-4">
-        {/* ABAS */}
-        <div className="flex bg-white/10 rounded-2xl p-1 mb-6 border border-white/5 shadow-inner">
-           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-            {["fornecedores", "cerimonia", "recepcao", "decoracao", "buffet", "tecnico"].map(aba => (
-              <button key={aba} onClick={() => setAbaAtiva(aba)} className={`px-5 py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${abaAtiva === aba ? "bg-[#7e7f7f] text-white" : "text-gray-400"}`}>
-                {aba}
-              </button>
-            ))}
-           </div>
-        </div>
-
         <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
           {abaAtiva === "fornecedores" && (
             <div className="space-y-1">
@@ -156,6 +169,7 @@ export default function FichaTecnica() {
               ))}
             </div>
           )}
+          {/* As outras abas serão preenchidas conforme avançarmos */}
         </div>
       </div>
     </div>
