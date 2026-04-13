@@ -1,13 +1,66 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Save, Loader2, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Pencil, Check } from 'lucide-react';
 import Head from 'next/head';
 
 const supabase = createClient(
  'https://rticfwqptlxkpgawpzwf.supabase.co',
  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0aWNmd3FwdGx4a3BnYXdwendmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDA2MTEsImV4cCI6MjA4OTQxNjYxMX0.vOmi-rKKxXuZ5SP7uZe81Cr0fKW_fWN4Hmuf90soijM'
 );
+
+// --- COMPONENTE CAMPO (MOVIDO PARA FORA PARA CORRIGIR O TECLADO) ---
+const Campo = ({ idCampo, defaultLabel, value, checked, onValueChange, onCheckChange, onLabelChange, customLabel }) => {
+  const [editandoNome, setEditandoNome] = useState(false);
+  const labelExibida = customLabel || defaultLabel;
+
+  return (
+    <div className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-[20px] mb-3 shadow-sm group">
+      <input 
+        type="checkbox" 
+        className="mt-1 w-5 h-5 accent-[#ded0b8] rounded-lg border-gray-200 cursor-pointer"
+        checked={checked || false}
+        onChange={(e) => onCheckChange(idCampo, e.target.checked)}
+      />
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-1">
+          {editandoNome ? (
+            <div className="flex items-center gap-2 w-full">
+              <input 
+                className="text-[10px] font-bold text-gray-700 uppercase tracking-widest border-b border-[#ded0b8] outline-none flex-1"
+                value={labelExibida}
+                onChange={(e) => onLabelChange(idCampo, e.target.value)}
+                autoFocus
+              />
+              <button onClick={() => setEditandoNome(false)} className="text-green-500"><Check size={12}/></button>
+            </div>
+          ) : (
+            <>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">{labelExibida}</label>
+              <button 
+                onClick={() => setEditandoNome(true)} 
+                className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-[#ded0b8] transition-all"
+              >
+                <Pencil size={10} />
+              </button>
+            </>
+          )}
+        </div>
+        <textarea 
+          rows="1"
+          placeholder="Preencher..."
+          className="w-full border-none bg-transparent focus:ring-0 text-gray-700 p-0 text-sm font-medium resize-none overflow-hidden min-h-[20px]"
+          value={value || ""}
+          onChange={(e) => onValueChange(idCampo, e.target.value)}
+          onInput={(e) => {
+            e.target.style.height = 'auto';
+            e.target.style.height = e.target.scrollHeight + 'px';
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
 export default function FichaTecnica() {
   const router = useRouter();
@@ -16,17 +69,6 @@ export default function FichaTecnica() {
   const [abaAtiva, setAbaAtiva] = useState("fornecedores");
   const [dadosFicha, setDadosFicha] = useState({});
   const [salvando, setSalvando] = useState(false);
-
-  // Categorias baseadas no seu PDF
-  const abas = [
-    { id: "fornecedores", nome: "Fornecedores" },
-    { id: "cerimonia", nome: "Cerimônia" },
-    { id: "logistica", nome: "Logística/Salão" },
-    { id: "buffet", nome: "Buffet/Doces" },
-    { id: "decoracao", nome: "Decoração" },
-    { id: "tecnico", nome: "Som/Luz" },
-    { id: "outros", nome: "Extras" }
-  ];
 
   useEffect(() => {
     if (id) {
@@ -39,12 +81,8 @@ export default function FichaTecnica() {
     }
   }, [id]);
 
-  const handleChange = (campo, valor) => {
+  const updateFicha = (campo, valor) => {
     setDadosFicha(prev => ({ ...prev, [campo]: valor }));
-  };
-
-  const handleCheck = (campo) => {
-    setDadosFicha(prev => ({ ...prev, [campo]: !prev[campo] }));
   };
 
   const salvarFicha = async () => {
@@ -54,35 +92,12 @@ export default function FichaTecnica() {
     if (!error) alert('Ficha Técnica sincronizada!');
   };
 
-  // Componente de Input elegante com Checkbox integrado
-  const Campo = ({ idCampo, label, placeholder = "Preencher..." }) => (
-    <div className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-[20px] mb-3 shadow-sm">
-      <input 
-        type="checkbox" 
-        className="mt-1 w-5 h-5 accent-[#ded0b8] rounded-lg border-gray-200"
-        checked={dadosFicha[`${idCampo}_check`] || false}
-        onChange={() => handleCheck(`${idCampo}_check`)}
-      />
-      <div className="flex-1">
-        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{label}</label>
-        <textarea 
-          rows="1"
-          placeholder={placeholder}
-          className="w-full border-none bg-transparent focus:ring-0 text-gray-700 p-0 text-sm font-medium resize-none"
-          value={dadosFicha[idCampo] || ""}
-          onChange={(e) => handleChange(idCampo, e.target.value)}
-        />
-      </div>
-    </div>
-  );
-
-  if (!evento) return <div className="min-h-screen bg-gray-50 flex items-center justify-center animate-pulse text-gray-400 uppercase text-[10px] tracking-widest">Carregando dados do PDF...</div>;
+  if (!evento) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400 uppercase text-[10px] tracking-widest">Sincronizando PDF...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-32">
-      <Head><title>Ficha Técnica Digital | {evento.nome}</title></Head>
+      <Head><title>Ficha Técnica | {evento.nome}</title></Head>
 
-      {/* HEADER FIXO */}
       <div className="bg-[#7e7f7f] pt-12 pb-8 px-6 text-white rounded-b-[40px] shadow-lg sticky top-0 z-20">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button onClick={() => router.back()} className="p-2 bg-white/10 rounded-full"><ArrowLeft size={20} className="text-[#ded0b8]" /></button>
@@ -96,120 +111,51 @@ export default function FichaTecnica() {
         </div>
       </div>
 
-      {/* MENU DE ABAS DESLIZANTE (Scroll Horizontal) */}
       <div className="max-w-md mx-auto mt-6 px-4">
-        <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
-          {abas.map(aba => (
-            <button 
-              key={aba.id}
-              onClick={() => setAbaAtiva(aba.id)}
-              className={`whitespace-nowrap px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all border ${abaAtiva === aba.id ? "bg-[#7e7f7f] text-white border-[#7e7f7f] shadow-md" : "bg-white text-gray-400 border-gray-100"}`}
-            >
-              {aba.nome}
-            </button>
-          ))}
+        {/* ABAS */}
+        <div className="flex bg-white/10 rounded-2xl p-1 mb-6 border border-white/5 shadow-inner">
+           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+            {["fornecedores", "cerimonia", "recepcao", "decoracao", "buffet", "tecnico"].map(aba => (
+              <button key={aba} onClick={() => setAbaAtiva(aba)} className={`px-5 py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${abaAtiva === aba ? "bg-[#7e7f7f] text-white" : "text-gray-400"}`}>
+                {aba}
+              </button>
+            ))}
+           </div>
         </div>
 
-        {/* CONTEÚDO DINÂMICO POR ABA */}
-        <div className="mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
-         {abaAtiva === "fornecedores" && (
-  <div className="space-y-1 animate-in fade-in duration-500">
-    <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-[3px] mb-6 text-center">Gestão de Fornecedores</h2>
-    
-    {/* Campos extraídos diretamente do PDF [cite: 9] */}
-    <Campo idCampo="f_cerimonia" label="Cerimônia" />
-    <Campo idCampo="f_recepcao" label="Recepção" />
-    <Campo idCampo="f_convidados" label="Quantidade de Convidados" />
-    <Campo idCampo="f_buffet" label="Buffet" />
-    <Campo idCampo="f_decor_igreja" label="Decoração Igreja" />
-    <Campo idCampo="f_decor_recepcao" label="Decoração Recepção" />
-    <Campo idCampo="f_iluminacao" label="Iluminação Decorativa" />
-    <Campo idCampo="f_dj" label="DJ / Estrutura" />
-    <Campo idCampo="f_banda1" label="Banda 1" />
-    <Campo idCampo="f_banda2" label="Banda 2" />
-    <Campo idCampo="f_musicos_cerimonia" label="Músicos da Cerimônia" />
-    <Campo idCampo="f_foto" label="Fotografia" />
-    <Campo idCampo="f_filme" label="Filmagem" />
-    <Campo idCampo="f_storymaker" label="Storymaker" />
-    <Campo idCampo="f_vestido" label="Vestido" />
-    <Campo idCampo="f_terno" label="Terno" />
-    <Campo idCampo="f_dia_noiva" label="Dia da Noiva" />
-    <Campo idCampo="f_dia_noivo" label="Dia do Noivo" />
-    <Campo idCampo="f_convites" label="Convites" />
-    <Campo idCampo="f_bartender" label="Bartender" />
-    
-    {/* Continuação dos campos [cite: 10] */}
-    <Campo idCampo="f_doces" label="Doces" />
-    <Campo idCampo="f_bolo" label="Bolo" />
-    <Campo idCampo="f_bolo_fake" label="Bolo Fake" />
-    <Campo idCampo="f_bem_casados" label="Bem Casados" />
-    <Campo idCampo="f_carro" label="Carro" />
-    <Campo idCampo="f_locacao" label="Locação" />
-    <Campo idCampo="f_atracoes" label="Atrações" />
-  </div>
-)}
-
-          {abaAtiva === "cerimonia" && (
+        <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          {abaAtiva === "fornecedores" && (
             <div className="space-y-1">
-              <Campo idCampo="c_cadeiras" label="Cadeiras/Bancos (Qtd)" />
-              <Campo idCampo="c_itens" label="Lágrimas/Leques/Água" />
-              <Campo idCampo="c_altar" label="Aparador/Passarela/Votos" />
-              <Campo idCampo="c_cortejo" label="Bouquets/Pétalas/Placas" />
-              <Campo idCampo="c_saida" label="Sparkles/Bolhas de Sabão" />
-              <Campo idCampo="c_decor" label="Tapete/Flores Altar" />
+              {[
+                {id: "f_cerimonia", label: "Cerimônia"}, {id: "f_recepcao", label: "Recepção"},
+                {id: "f_convidados", label: "Quantidade de Convidados"}, {id: "f_buffet", label: "Buffet"},
+                {id: "f_decor_ig", label: "Decoração Igreja"}, {id: "f_decor_rec", label: "Decoração Recepção"},
+                {id: "f_ilum", label: "Iluminação Decorativa"}, {id: "f_dj", label: "DJ / Estrutura"},
+                {id: "f_banda1", label: "Banda 1"}, {id: "f_banda2", label: "Banda 2"},
+                {id: "f_musicos", label: "Músicos da Cerimônia"}, {id: "f_foto", label: "Fotografia"},
+                {id: "f_filme", label: "Filmagem"}, {id: "f_story", label: "Storymaker"},
+                {id: "f_vestido", label: "Vestido"}, {id: "f_terno", label: "Terno"},
+                {id: "f_noiva", label: "Dia da Noiva"}, {id: "f_noivo", label: "Dia do Noivo"},
+                {id: "f_convites", label: "Convites"}, {id: "f_bar", label: "Bartender"},
+                {id: "f_doces", label: "Doces"}, {id: "f_bolo", label: "Bolo"},
+                {id: "f_fake", label: "Bolo Fake"}, {id: "f_bemcasado", label: "Bem Casados"},
+                {id: "f_carro", label: "Carro"}, {id: "f_loc", label: "Locação"},
+                {id: "f_atr", label: "Atrações"}
+              ].map(item => (
+                <Campo 
+                  key={item.id}
+                  idCampo={item.id}
+                  defaultLabel={item.label}
+                  value={dadosFicha[item.id]}
+                  checked={dadosFicha[`${item.id}_check`]}
+                  customLabel={dadosFicha[`${item.id}_label`]}
+                  onValueChange={(id, val) => updateFicha(id, val)}
+                  onCheckChange={(id, check) => updateFicha(`${id}_check`, check)}
+                  onLabelChange={(id, label) => updateFicha(`${id}_label`, label)}
+                />
+              ))}
             </div>
           )}
-
-          {abaAtiva === "logistica" && (
-            <div className="space-y-1">
-              <Campo idCampo="l_adultos" label="Qtd Adultos / Crianças" />
-              <Campo idCampo="l_mesas" label="Qtd Mesas / Lugares Total" />
-              <Campo idCampo="l_mapeamento" label="Mesa Família / Mapeamento" />
-              <Campo idCampo="l_enxoval" label="Sousplat/Toalhas/Guardanapos" />
-              <Campo idCampo="l_impressos" label="Menus/Numeração de Mesa" />
-              <Campo idCampo="l_banheiro" label="Kit Banheiro/Limpeza" />
-            </div>
-          )}
-
-          {abaAtiva === "buffet" && (
-            <div className="space-y-1">
-              <Campo idCampo="b_bebidas" label="Cerveja/Carrinho/Gelo" />
-              <Campo idCampo="b_servico" label="Horário Início/Jantar/Saideira" />
-              <Campo idCampo="b_doces" label="Doces (Qtd/Tipos/Forminhas)" />
-              <Campo idCampo="b_bolo" label="Bolo Real/Fake (Kg/Sabor)" />
-              <Campo idCampo="b_bemcasado" label="Bem Casados (Qtd/Embalagem)" />
-            </div>
-          )}
-
-          {abaAtiva === "decoracao" && (
-            <div className="space-y-1">
-              <Campo idCampo="d_estilo" label="Estilo / Tons Decoração" />
-              <Campo idCampo="d_bolo" label="Mesa do Bolo / Suportes" />
-              <Campo idCampo="d_aereo" label="Arranjos Aéreos / Emparedamento" />
-              <Campo idCampo="d_extras" label="Árvore/Lounge/Bistrôs" />
-              <Campo idCampo="d_iluminacao" label="Iluminação Mesa Bolo" />
-            </div>
-          )}
-
-          {abaAtiva === "tecnico" && (
-            <div className="space-y-1">
-              <Campo idCampo="t_dj" label="DJ (Estrutura/Painel LED)" />
-              <Campo idCampo="t_banda" label="Banda (Palco/Backline/Técnico)" />
-              <Campo idCampo="t_luz" label="Luz Decorativa (Pimbim/Canhões)" />
-              <Campo idCampo="t_energia" label="Ligação de Energia/Voltagem" />
-            </div>
-          )}
-
-          {abaAtiva === "outros" && (
-            <div className="space-y-1">
-              <Campo idCampo="o_drinks" label="Bartender (Balcão/Menu/Qtd)" />
-              <Campo idCampo="o_lembrancas" label="Chinelos/Aromatizadores/Copos" />
-              <Campo idCampo="o_entretenimento" label="Kids/Cabine/Personagens" />
-              <Campo idCampo="o_obs" label="Observações Gerais do Evento" />
-            </div>
-          )}
-
         </div>
       </div>
     </div>
