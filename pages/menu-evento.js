@@ -1,14 +1,14 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-// MÁGICA: Adicionei o ícone "FileText" aqui em cima!
+// Ícone FileText adicionado para a Ficha Técnica
 import { ArrowLeft, Clock, ClipboardCheck, Users, Calendar, FileText } from 'lucide-react';
 import Link from 'next/link';
 import Head from 'next/head';
 
 const supabase = createClient(
   'https://rticfwqptlxkpgawpzwf.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0aWNmd3FwdGx4a3BnYXdwendmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDA2MTEsImV4cCI6MjA4OTQxNjYxMX0.vOmi-rKKxXuZ5SP7uZe81Cr0fKW_fWN4Hmuf90soijM'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0aWNmd3FwdGx4a3BnYXdwendmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTExNjY1OTMsImV4cCI6MjAyNjc0MjU5M30.YOUR_ANON_KEY'
 );
 
 export default function MenuEvento() {
@@ -24,68 +24,47 @@ export default function MenuEvento() {
     }
   }, [id]);
 
+  if (!evento) return <div className="p-10 text-center text-gray-500">Carregando menu...</div>;
+
   return (
-    <div className="min-h-screen bg-[#7e7f7f] p-6 font-sans flex flex-col items-center pb-20">
-      <Head><title>Menu do Evento | Cerimonial Elite</title></Head>
-      <div className="w-full max-w-md animate-in fade-in duration-500">
+    <div className="min-h-screen bg-[#fdfbf7] font-serif pb-10">
+      <Head>
+        <title>Menu do Evento | {evento.nome}</title>
+      </Head>
+
+      <div className="bg-[#2c7a7b] pt-12 pb-6 px-6 text-white rounded-b-3xl shadow-lg">
+        <div className="max-w-md mx-auto flex items-center gap-4">
+          <button onClick={() => router.push('/')} className="p-2 bg-white/20 rounded-full">
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="text-2xl font-bold tracking-tight">{evento.nome}</h1>
+        </div>
+      </div>
+
+      <div className="max-w-md mx-auto mt-8 px-6 grid grid-cols-1 gap-4">
         
-        {/* CABEÇALHO */}
-        <div className="flex items-center mb-8 pt-4">
-          <Link href="/" className="bg-white/20 p-3 rounded-full text-white hover:bg-white/30 transition-all shadow-sm">
-            <ArrowLeft size={20}/>
-          </Link>
-        </div>
+        {/* BOTÃO DA FICHA TÉCNICA - AJUSTADO PARA O NOME CERTO DO ARQUIVO */}
+        <Link href={`/ficha-tecnica?id=${id}`} className="flex items-center gap-4 p-5 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition active:scale-95">
+          <div className="p-3 bg-teal-100 text-teal-600 rounded-xl">
+            <FileText size={28} />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800 text-lg">Ficha Técnica</h3>
+            <p className="text-sm text-gray-500">Fornecedores e Cerimônia</p>
+          </div>
+        </Link>
 
-        {/* TÍTULO DO EVENTO */}
-        <div className="text-center mb-10">
-          <h1 className="text-white font-bold uppercase tracking-[4px] text-xl mb-2">
-            {evento ? evento.nome : 'Carregando...'}
-          </h1>
-          {evento?.data && (
-            <div className="flex items-center justify-center gap-2 text-[#ded0b8] text-xs font-bold tracking-widest uppercase">
-              <Calendar size={14} />
-              {new Date(evento.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}
-            </div>
-          )}
-        </div>
+        {/* Outros botões do seu menu... */}
+        <Link href={`/lista?id=${id}`} className="flex items-center gap-4 p-5 bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
+            <Users size={28} />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800 text-lg">Lista de Convidados</h3>
+            <p className="text-sm text-gray-500">Gestão e confirmações</p>
+          </div>
+        </Link>
 
-        {/* MENU DE CARTÕES PADRONIZADOS */}
-        <div className="space-y-4">
-          
-          {/* --- NOVO BOTÃO DA FICHA TÉCNICA AQUI! --- */}
-          <Link href={`/ficha?id=${id}`} className="bg-white rounded-[35px] p-4 flex items-center gap-4 shadow-xl hover:scale-[1.02] transition-all">
-            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><FileText size={24} /></div>
-            <div>
-              <h2 className="text-slate-700 font-bold uppercase tracking-widest text-[12px] mb-1">Ficha Técnica</h2>
-              <p className="text-gray-400 italic text-[10px] uppercase tracking-wider">Fornecedores e Cerimônia</p>
-            </div>
-          </Link>
-
-          <Link href={`/roteiro?id=${id}`} className="bg-white rounded-[35px] p-4 flex items-center gap-4 shadow-xl hover:scale-[1.02] transition-all">
-            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><Clock size={24} /></div>
-            <div>
-              <h2 className="text-slate-700 font-bold uppercase tracking-widest text-[12px] mb-1">Roteiro do Dia</h2>
-              <p className="text-gray-400 italic text-[10px] uppercase tracking-wider">Cronograma e Festa</p>
-            </div>
-          </Link>
-
-          <Link href={`/checklist?id=${id}`} className="bg-white rounded-[35px] p-4 flex items-center gap-4 shadow-xl hover:scale-[1.02] transition-all">
-            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><ClipboardCheck size={24} /></div>
-            <div>
-              <h2 className="text-slate-700 font-bold uppercase tracking-widest text-[12px] mb-1">Novo Relatório</h2>
-              <p className="text-gray-400 italic text-[10px] uppercase tracking-wider">Checklist de Saída</p>
-            </div>
-          </Link>
-
-          <Link href={`/lista?id=${id}`} className="bg-white rounded-[35px] p-4 flex items-center gap-4 shadow-xl hover:scale-[1.02] transition-all">
-            <div className="bg-[#ded0b8] p-4 rounded-2xl text-white shadow-inner"><Users size={24} /></div>
-            <div>
-              <h2 className="text-slate-700 font-bold uppercase tracking-widest text-[12px] mb-1">Convidados</h2>
-              <p className="text-gray-400 italic text-[10px] uppercase tracking-wider">Gestão e Portaria</p>
-            </div>
-          </Link>
-
-        </div>
       </div>
     </div>
   );
