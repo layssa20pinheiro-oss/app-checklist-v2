@@ -169,7 +169,44 @@ export default function FichaTecnica() {
               ))}
             </div>
           )}
-          {/* As outras abas serão preenchidas conforme avançarmos */}
+          {abaAtiva === "cerimonia" && (
+  <div className="space-y-1 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-[3px] mb-6 text-center">Protocolos da Cerimônia</h2>
+    {[
+      {id: "c_cadeiras", label: "1. Quantidade de cadeiras/ bancos"}, 
+      {id: "c_lagrimas", label: "2. Lágrimas de alegria"}, 
+      {id: "c_leques", label: "3. Leques"}, 
+      {id: "c_agua", label: "4. Água aromatizada e normal"}, 
+      {id: "c_mesa_agua", label: "5. Mesa para agua"}, 
+      {id: "c_aparador", label: "6. Aparador do celebrante"}, 
+      {id: "c_tapete", label: "7. Tapete ou passarela para corredor"}, 
+      {id: "c_votos", label: "8. Votos dos noivos"}, 
+      {id: "c_placas", label: "9. Placas"}, 
+      {id: "c_corsages", label: "10. Corsages (Qtd) / Noivo diferente"}, 
+      {id: "c_bouquet_n", label: "11. Bouquet Noiva / Bouquet de jogar"}, 
+      {id: "c_bouquet_d", label: "12. Bouquet Dama / Quantos"}, 
+      {id: "c_petalas", label: "13. Pétalas / Cestinha"}, 
+      {id: "c_botoes", label: "14. Braçada Botões"}, 
+      {id: "c_santas", label: "15. Imagens / Santas"}, 
+      {id: "c_sparkles", label: "16. Sparkles"}, 
+      {id: "c_bolhas", label: "17. Bolhas de sabão"}, 
+      {id: "c_welcome", label: "18. Welcome drinks (Início / Mesa ou Aparador)"}, 
+      {id: "c_pais", label: "19. Cadeiras para PAIS / PADRINHOS / PAJENS"} 
+    ].map(item => (
+      <Campo 
+        key={item.id}
+        idCampo={item.id}
+        defaultLabel={item.label}
+        value={dadosFicha[item.id]}
+        checked={dadosFicha[`${item.id}_check`]}
+        customLabel={dadosFicha[`${item.id}_label`]}
+        onValueChange={(id, val) => updateFicha(id, val)}
+        onCheckChange={(id, check) => updateFicha(`${id}_check`, check)}
+        onLabelChange={(id, label) => updateFicha(`${id}_label`, label)}
+      />
+    ))}
+  </div>
+)}
         </div>
       </div>
     </div>
