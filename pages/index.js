@@ -1,3 +1,7 @@
+// No topo do index.js, perto do título "Meus Eventos"
+<Link href="/configuracoes" className="text-white/30 hover:text-[#ded0b8] transition-all">
+  <Settings size={20} />
+</Link>
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Plus, Calendar, Trash2, Users, Edit2, Bookmark } from 'lucide-react';
