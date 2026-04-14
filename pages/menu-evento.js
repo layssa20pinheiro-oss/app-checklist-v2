@@ -6,8 +6,8 @@ import Link from 'next/link';
 import Head from 'next/head';
 
 const supabase = createClient(
- 'https://rticfwqptlxkpgawpzwf.supabase.co',
- 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0aWNmd3FwdGx4a3BnYXdwendmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDA2MTEsImV4cCI6MjA4OTQxNjYxMX0.vOmi-rKKxXuZ5SP7uZe81Cr0fKW_fWN4Hmuf90soijM'
+  'https://rticfwqptlxkpgawpzwf.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0aWNmd3FwdGx4a3BnYXdwendmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDA2MTEsImV4cCI6MjA4OTQxNjYxMX0.vOmi-rKKxXuZ5SP7uZe81Cr0fKW_fWN4Hmuf90soijM'
 );
 
 export default function MenuEvento() {
@@ -33,7 +33,9 @@ export default function MenuEvento() {
     <div className="min-h-screen bg-[#7e7f7f] font-sans pb-10">
       <Head><title>{evento.nome} | Painel</title></Head>
 
-      {/* HEADER COM A ENGRENAGEM AO LADO DO NOME */}
+      {/* ============================================================ */}
+      {/* [1] HEADER: SETA VOLTAR, NOME E ENGRENAGEM */}
+      {/* ============================================================ */}
       <div className="pt-12 pb-8 px-6 text-white">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -42,23 +44,25 @@ export default function MenuEvento() {
             </button>
             <div>
               <p className="text-[9px] uppercase tracking-[3px] text-white/50 font-bold mb-0.5">Painel do Evento</p>
-              <h1 className="text-xl font-bold tracking-tight uppercase flex items-center gap-3">
-                {evento.nome}
-              </h1>
+              <h1 className="text-xl font-bold tracking-tight uppercase">{evento.nome}</h1>
             </div>
           </div>
           
-          {/* BOTÃO DE CONFIGURAÇÕES (ENGRENAGEM) */}
           <Link href={`/configuracoes?id=${id}`} className="p-3 bg-white/10 rounded-2xl hover:bg-white/20 transition">
             <Settings size={22} className="text-white" />
           </Link>
         </div>
       </div>
 
+
+      {/* ============================================================ */}
+      {/* [2] MENU DE CARDS: BOTÕES PRINCIPAIS */}
+      {/* ============================================================ */}
       <div className="max-w-md mx-auto px-6 space-y-4">
         
- <Link href={`/roteiro?id=${id}&admin=true`} className="w-full"> ... </button>      
- <div className="p-3 bg-[#ded0b8]/20 text-[#ded0b8] rounded-2xl">
+        {/* CARD: ROTEIRO (COM ACESSO ADMIN) */}
+        <Link href={`/roteiro?id=${id}&admin=true`} className="flex items-center gap-4 p-4 bg-white rounded-[30px] shadow-xl hover:scale-[1.02] transition active:scale-95">
+          <div className="p-3 bg-[#ded0b8]/20 text-[#ded0b8] rounded-2xl">
             <Clock size={24} />
           </div>
           <div className="flex-1">
@@ -67,6 +71,7 @@ export default function MenuEvento() {
           </div>
         </Link>
 
+        {/* CARD: LISTA DE CONVIDADOS */}
         <Link href={`/lista?id=${id}`} className="flex items-center gap-4 p-4 bg-white rounded-[30px] shadow-xl hover:scale-[1.02] transition active:scale-95">
           <div className="p-3 bg-[#8da38d]/20 text-[#8da38d] rounded-2xl">
             <Users size={24} />
@@ -77,6 +82,7 @@ export default function MenuEvento() {
           </div>
         </Link>
 
+        {/* CARD: FICHA TÉCNICA */}
         <Link href={`/ficha-tecnica?id=${id}`} className="flex items-center gap-4 p-4 bg-white rounded-[30px] shadow-xl hover:scale-[1.02] transition active:scale-95">
           <div className="p-3 bg-blue-50 text-blue-400 rounded-2xl">
             <ScrollText size={24} />
@@ -87,6 +93,7 @@ export default function MenuEvento() {
           </div>
         </Link>
 
+        {/* CARD: CHECKLIST DE SAÍDA */}
         <Link href={`/checklist?id=${id}`} className="flex items-center gap-4 p-4 bg-white rounded-[30px] shadow-xl hover:scale-[1.02] transition active:scale-95">
           <div className="p-3 bg-purple-50 text-purple-400 rounded-2xl">
             <ClipboardCheck size={24} />
