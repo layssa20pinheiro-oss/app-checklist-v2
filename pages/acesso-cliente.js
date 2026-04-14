@@ -55,18 +55,18 @@ export default function AcessoCliente() {
 
       <div className="max-w-md mx-auto px-6 space-y-6">
         
-        {/* CARD DE RESUMO RÁPIDO */}
-        <div className="bg-white rounded-[35px] p-6 shadow-2xl flex justify-around text-center border border-white/10">
-           <div>
-              <p className="text-[8px] uppercase font-bold text-gray-400 mb-1">Confirmados</p>
-              <p className="text-xl font-bold text-gray-700">{confirmados}</p>
-           </div>
-           <div className="w-px bg-gray-100 h-10 my-auto"></div>
-           <div>
-              <p className="text-[8px] uppercase font-bold text-gray-400 mb-1">Total na Lista</p>
-              <p className="text-xl font-bold text-gray-700">{totalConvidados}</p>
-           </div>
-        </div>
+       {/* CARD DE RESUMO RÁPIDO (Agora mais fino e integrado ao fundo) */}
+<div className="bg-white/5 backdrop-blur-sm rounded-[25px] p-4 flex justify-around text-center border border-white/10">
+   <div>
+      <p className="text-[8px] uppercase font-bold text-white/40 mb-1 tracking-widest">Confirmados</p>
+      <p className="text-lg font-bold text-white/90">{confirmados}</p>
+   </div>
+   <div className="w-px bg-white/10 h-8 my-auto"></div>
+   <div>
+      <p className="text-[8px] uppercase font-bold text-white/40 mb-1 tracking-widest">Total na Lista</p>
+      <p className="text-lg font-bold text-white/90">{totalConvidados}</p>
+   </div>
+</div>
 
         {/* BOTÕES DE ACESSO DO CLIENTE */}
         <div className="grid grid-cols-1 gap-4">
