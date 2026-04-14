@@ -41,12 +41,12 @@ export default function AcessoCliente() {
       <div className="pt-16 pb-10 px-6 text-white text-center flex flex-col items-center">
         <div className="max-w-md mx-auto w-full">
           
-          {/* CHAMADA DO LOGO SALVO NA PASTA PUBLIC */}
-          <img 
-            logo_nc_transparente.png 
-            alt="NC Cerimonial" 
-            className="max-w-[150px] mx-auto mb-8 h-auto object-contain"
-          />
+          {/* CHAMADA DO LOGO NOVO SEM FUNDO */}
+<img 
+  src="/logo_nc_transparente.png" 
+  alt="NC Cerimonial" 
+  className="max-w-[150px] mx-auto mb-8 h-auto object-contain"
+/>
 
           <p className="text-[10px] uppercase tracking-[4px] text-white/50 font-bold mb-2">Bem-vinda ao seu painel</p>
           <h1 className="text-2xl font-bold tracking-tight uppercase">{evento?.nome}</h1>
