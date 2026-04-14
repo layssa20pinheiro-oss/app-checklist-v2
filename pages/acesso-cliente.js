@@ -43,7 +43,7 @@ export default function AcessoCliente() {
           
           {/* CHAMADA DO LOGO SALVO NA PASTA PUBLIC */}
           <img 
-            src="/icon.png" 
+            logo_nc_transparente.png 
             alt="NC Cerimonial" 
             className="max-w-[150px] mx-auto mb-8 h-auto object-contain"
           />
