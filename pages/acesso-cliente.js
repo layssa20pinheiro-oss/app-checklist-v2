@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Clock, Users, Heart } from 'lucide-react';
 import Head from 'next/head';
+import Link from 'next/link';
 
 const supabase = createClient(
  'https://rticfwqptlxkpgawpzwf.supabase.co',
