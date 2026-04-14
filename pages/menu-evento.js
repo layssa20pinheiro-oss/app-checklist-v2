@@ -57,8 +57,8 @@ export default function MenuEvento() {
 
       <div className="max-w-md mx-auto px-6 space-y-4">
         
-        <Link href={`/roteiro?id=${id}`} className="flex items-center gap-4 p-4 bg-white rounded-[30px] shadow-xl hover:scale-[1.02] transition active:scale-95">
-          <div className="p-3 bg-[#ded0b8]/20 text-[#ded0b8] rounded-2xl">
+ <Link href={`/roteiro?id=${id}&admin=true`} className="w-full"> ... </button>      
+ <div className="p-3 bg-[#ded0b8]/20 text-[#ded0b8] rounded-2xl">
             <Clock size={24} />
           </div>
           <div className="flex-1">
