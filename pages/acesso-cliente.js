@@ -71,13 +71,16 @@ export default function AcessoCliente() {
         {/* BOTÕES DE ACESSO DO CLIENTE */}
         <div className="grid grid-cols-1 gap-4">
           
-          <button className="flex items-center gap-4 p-5 bg-white rounded-[30px] shadow-xl hover:scale-[1.01] transition active:scale-95 text-left w-full border border-white/10">
-            <div className="p-3 bg-[#ded0b8]/20 text-[#ded0b8] rounded-2xl"><Users size={24} /></div>
-            <div>
-              <h3 className="font-bold text-gray-700 text-xs uppercase tracking-widest">Lista de Convidados</h3>
-              <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Acompanhar confirmações</p>
-            </div>
-          </button>
+          {/* Procure o botão da lista e envolva-o com um Link */}
+<Link href={`/cliente-lista?id=${id}`} className="w-full">
+  <button className="flex items-center gap-4 p-5 bg-white rounded-[30px] shadow-xl hover:scale-[1.01] transition active:scale-95 text-left w-full border border-white/10">
+    <div className="p-3 bg-[#ded0b8]/20 text-[#ded0b8] rounded-2xl"><Users size={24} /></div>
+    <div>
+      <h3 className="font-bold text-gray-700 text-xs uppercase tracking-widest">Lista de Convidados</h3>
+      <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Acompanhar confirmações</p>
+    </div>
+  </button>
+</Link>
 
           <button className="flex items-center gap-4 p-5 bg-white rounded-[30px] shadow-xl hover:scale-[1.01] transition active:scale-95 text-left w-full border border-white/10">
             <div className="p-3 bg-gray-50 text-gray-400 rounded-2xl"><Clock size={24} /></div>
