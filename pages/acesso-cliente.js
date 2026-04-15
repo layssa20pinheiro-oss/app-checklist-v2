@@ -16,7 +16,6 @@ export default function AcessoCliente() {
   const [evento, setEvento] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // Lógica da Contagem Regressiva
   const [timeLeft, setTimeLeft] = useState({ dias: 0, horas: 0, minutos: 0, segundos: 0 });
 
   useEffect(() => {
@@ -59,6 +58,7 @@ export default function AcessoCliente() {
     <div className="min-h-screen bg-[#7e7f7f] font-sans pb-10">
       <Head><title>Meu Evento | {evento?.nome}</title></Head>
 
+      {/* HEADER */}
       <div className="pt-16 pb-10 px-6 text-white text-center flex flex-col items-center">
         <div className="max-w-md mx-auto w-full">
           <img 
@@ -73,7 +73,7 @@ export default function AcessoCliente() {
 
       <div className="max-w-md mx-auto px-6 space-y-6">
         
-        {/* CONTAGEM REGRESSIVA ESTILO GLASSMORPHISM */}
+        {/* CONTAGEM REGRESSIVA */}
         <div className="bg-white/5 backdrop-blur-md rounded-[30px] p-6 border border-white/10 flex justify-around items-center shadow-2xl">
            <div className="text-center">
               <p className="text-2xl font-bold text-white leading-none">{timeLeft.dias}</p>
@@ -96,7 +96,10 @@ export default function AcessoCliente() {
            </div>
         </div>
 
+        {/* --- INÍCIO DA GRADE DE BOTÕES --- */}
         <div className="grid grid-cols-1 gap-4">
+          
+          {/* BOTÃO 1: LISTA */}
           <Link href={`/cliente-lista?id=${id}`} className="w-full">
             <button className="flex items-center gap-4 p-5 bg-white rounded-[30px] shadow-xl hover:scale-[1.01] transition active:scale-95 text-left w-full border border-white/10">
               <div className="p-3 bg-[#ded0b8]/20 text-[#ded0b8] rounded-2xl"><Users size={24} /></div>
@@ -107,6 +110,7 @@ export default function AcessoCliente() {
             </button>
           </Link>
 
+          {/* BOTÃO 2: CRONOGRAMA */}
           <Link href={`/roteiro?id=${id}`} className="w-full">
             <button className="flex items-center gap-4 p-5 bg-white rounded-[30px] shadow-xl hover:scale-[1.01] transition active:scale-95 text-left w-full border border-white/10">
                 <div className="p-3 bg-gray-50 text-gray-400 rounded-2xl"><Clock size={24} /></div>
@@ -116,18 +120,20 @@ export default function AcessoCliente() {
                 </div>
             </button>
           </Link>
-        </div>
 
-  {/* BOTÃO FORNECEDORES (VISÃO CLIENTE) */}
-<Link href={`/fornecedores?id=${id}`} className="w-full">
-  <button className="flex items-center gap-4 p-5 bg-white rounded-[30px] shadow-xl hover:scale-[1.01] transition active:scale-95 text-left w-full border border-white/10">
-    <div className="p-3 bg-orange-50 text-orange-400 rounded-2xl"><Store size={24} /></div>
-    <div>
-      <h3 className="font-bold text-gray-700 text-xs uppercase tracking-widest">Fornecedores</h3>
-      <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Nossas indicações de confiança</p>
-    </div>
-  </button>
-</Link>
+          {/* BOTÃO 3: FORNECEDORES (AGORA DENTRO DA GRADE) */}
+          <Link href={`/fornecedores?id=${id}`} className="w-full">
+            <button className="flex items-center gap-4 p-5 bg-white rounded-[30px] shadow-xl hover:scale-[1.01] transition active:scale-95 text-left w-full border border-white/10">
+              <div className="p-3 bg-orange-50 text-orange-400 rounded-2xl"><Store size={24} /></div>
+              <div>
+                <h3 className="font-bold text-gray-700 text-xs uppercase tracking-widest">Fornecedores</h3>
+                <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Indicações de confiança</p>
+              </div>
+            </button>
+          </Link>
+
+        </div> 
+        {/* --- FIM DA GRADE DE BOTÕES --- */}
 
         <div className="pt-10 text-center">
            <Heart className="text-[#ded0b8]/20 mx-auto mb-2" size={20} />
