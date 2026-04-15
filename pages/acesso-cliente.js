@@ -118,6 +118,17 @@ export default function AcessoCliente() {
           </Link>
         </div>
 
+  {/* BOTÃO FORNECEDORES (VISÃO CLIENTE) */}
+<Link href={`/fornecedores?id=${id}`} className="w-full">
+  <button className="flex items-center gap-4 p-5 bg-white rounded-[30px] shadow-xl hover:scale-[1.01] transition active:scale-95 text-left w-full border border-white/10">
+    <div className="p-3 bg-orange-50 text-orange-400 rounded-2xl"><Store size={24} /></div>
+    <div>
+      <h3 className="font-bold text-gray-700 text-xs uppercase tracking-widest">Fornecedores</h3>
+      <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Nossas indicações de confiança</p>
+    </div>
+  </button>
+</Link>
+
         <div className="pt-10 text-center">
            <Heart className="text-[#ded0b8]/20 mx-auto mb-2" size={20} />
            <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest italic">Organizado por nossa equipe</p>
