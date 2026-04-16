@@ -1,3 +1,4 @@
+import { ArrowLeft, Plus, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Plus, Calendar, Trash2, Users, Edit2, Bookmark, Settings } from 'lucide-react';
@@ -85,6 +86,20 @@ export default function Home() {
   const eventosPassados = eventos.filter(ev => ev.data && ev.data < hoje);
 
   return (
+    // Dentro do seu return, antes do título "Meus Eventos":
+<div className="pt-12 pb-6 px-6">
+  <div className="max-w-md mx-auto flex items-center justify-between">
+    <button 
+      onClick={() => router.push('/')} 
+      className="p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition"
+    >
+      <ArrowLeft size={20} />
+    </button>
+    <h1 className="text-xs font-bold uppercase tracking-[4px] text-white">Meus Eventos</h1>
+    <div className="w-10"></div> {/* Equilíbrio visual */}
+  </div>
+</div>
+        
     <div className="min-h-screen bg-[#7e7f7f] p-6 font-sans pb-20">
       <Head><title>Cerimonial Elite</title><link rel="icon" href="/icon.png" /></Head>
       <div className="max-w-md mx-auto">
