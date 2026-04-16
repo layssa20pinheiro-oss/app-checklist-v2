@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Plus, Settings, Calendar, Users, Trash2, Edit2 } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, Users, Trash2, Edit2 } from 'lucide-react';
 import Head from 'next/head';
 
 const supabase = createClient(
@@ -13,6 +13,7 @@ export default function EventosLista() {
   const router = useRouter();
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [abaAtiva, setAbaAtiva] = useState('proximos'); // Controle das abas
 
   useEffect(() => {
     carregarEventos();
@@ -24,20 +25,31 @@ export default function EventosLista() {
     setLoading(false);
   }
 
+  // Lógica para filtrar eventos por data
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  const proximosEventos = eventos.filter(e => new Date(e.data) >= hoje);
+  const concluidosEventos = eventos.filter(e => new Date(e.data) < hoje);
+  
+  const listaExibida = abaAtiva === 'proximos' ? proximosEventos : concluidosEventos;
+
   return (
     <div className="min-h-screen bg-[#7e7f7f] font-sans pb-10">
       <Head><title>Meus Eventos | NC Cerimonial</title></Head>
 
-      {/* CABEÇALHO COM BOTÃO VOLTAR */}
-      <div className="pt-12 pb-6 px-6">
+      {/* [1] CABEÇALHO COM NAVEGAÇÃO */}
+      <div className="pt-12 pb-4 px-6">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button 
             onClick={() => router.push('/')} 
-            className="p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition shadow-lg"
+            className="p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition"
           >
             <ArrowLeft size={20} />
           </button>
+          
           <h1 className="text-xs font-bold uppercase tracking-[4px] text-white">Meus Eventos</h1>
+          
           <button 
             onClick={() => router.push('/eventos-novo')}
             className="p-3 bg-[#ded0b8] rounded-2xl text-white shadow-xl active:scale-95 transition"
@@ -47,45 +59,66 @@ export default function EventosLista() {
         </div>
       </div>
 
+      {/* [2] ABAS DE FILTRO */}
+      <div className="max-w-md mx-auto px-6 mb-8">
+        <div className="flex gap-8 border-b border-white/10 px-2">
+          <button 
+            onClick={() => setAbaAtiva('proximos')}
+            className={`pb-4 text-[10px] font-bold uppercase tracking-[2px] transition-all ${abaAtiva === 'proximos' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/30'}`}
+          >
+            Próximos
+          </button>
+          <button 
+            onClick={() => setAbaAtiva('concluidos')}
+            className={`pb-4 text-[10px] font-bold uppercase tracking-[2px] transition-all ${abaAtiva === 'concluidos' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/30'}`}
+          >
+            Concluídos
+          </button>
+        </div>
+      </div>
+
+      {/* [3] LISTAGEM DE CARDS */}
       <div className="max-w-md mx-auto px-6 space-y-4">
         {loading ? (
-          <p className="text-center text-white/30 uppercase text-[10px] tracking-widest py-20">Carregando eventos...</p>
+          <p className="text-center text-white/30 uppercase text-[9px] tracking-[4px] py-20 animate-pulse">Sincronizando eventos...</p>
         ) : (
-          eventos.map(evento => (
-            <div 
-              key={evento.id} 
-              onClick={() => router.push(`/menu-evento?id=${evento.id}`)}
-              className="bg-white p-6 rounded-[35px] shadow-xl border border-white/10 hover:scale-[1.02] transition cursor-pointer group"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="font-bold text-gray-700 text-sm uppercase tracking-tight group-hover:text-[#ded0b8] transition-colors">
-                  {evento.nome}
-                </h3>
-                <div className="flex gap-2 opacity-20 group-hover:opacity-100 transition-opacity">
-                   <Edit2 size={14} className="text-gray-400" />
-                   <Trash2 size={14} className="text-gray-400" />
+          <>
+            {listaExibida.map(evento => (
+              <div 
+                key={evento.id} 
+                onClick={() => router.push(`/menu-evento?id=${evento.id}`)}
+                className="bg-white p-6 rounded-[35px] shadow-xl border border-white/10 hover:scale-[1.01] transition cursor-pointer group"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="font-bold text-gray-700 text-sm uppercase tracking-tight group-hover:text-[#b0966a] transition-colors">
+                    {evento.nome}
+                  </h3>
+                  <div className="flex gap-2 opacity-10 group-hover:opacity-100 transition-opacity">
+                     <Edit2 size={14} className="text-gray-400" />
+                     <Trash2 size={14} className="text-gray-400" />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center gap-1.5 text-[8px] font-bold text-gray-400 uppercase bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                    <Calendar size={12} /> {new Date(evento.data).toLocaleDateString('pt-BR')}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[8px] font-bold text-gray-400 uppercase bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                    <Users size={12} /> {evento.convidados?.length || 0} Convidados
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[8px] font-bold text-[#ded0b8] uppercase bg-[#ded0b8]/10 px-3 py-1.5 rounded-full">
+                    {evento.tipo}
+                  </div>
                 </div>
               </div>
+            ))}
 
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase bg-gray-50 px-3 py-1.5 rounded-full">
-                  <Calendar size={12} /> {new Date(evento.data).toLocaleDateString('pt-BR')}
-                </div>
-                <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase bg-gray-50 px-3 py-1.5 rounded-full">
-                  <Users size={12} /> {evento.convidados?.length || 0} Convidados
-                </div>
-                <div className="flex items-center gap-1.5 text-[9px] font-bold text-[#ded0b8] uppercase bg-[#ded0b8]/10 px-3 py-1.5 rounded-full">
-                  {evento.tipo}
-                </div>
+            {listaExibida.length === 0 && (
+              <div className="text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10">
+                <p className="text-white/20 text-[9px] font-bold uppercase tracking-widest">Nenhum evento nesta categoria</p>
               </div>
-            </div>
-          ))
-        )}
-
-        {eventos.length === 0 && !loading && (
-          <div className="text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10">
-            <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Nenhum evento cadastrado</p>
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
