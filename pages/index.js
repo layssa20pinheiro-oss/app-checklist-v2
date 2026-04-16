@@ -36,7 +36,7 @@ export default function HomeAdmin() {
         <img 
           src="/logo_nc_transparente.png" 
           alt="NC Cerimonial" 
-          className="h-20 mx-auto mb-8 object-contain" // Logo aumentada
+          className="h-20 mx-auto mb-6 object-contain" // Logo aumentada
         />
         <p className="text-[#ded0b8] text-[10px] uppercase font-bold tracking-[5px] mb-2">
           {saudacao}, {usuarioNome}
