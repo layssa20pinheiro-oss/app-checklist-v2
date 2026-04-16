@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Briefcase, Calendar, 
-  Settings2, DollarSign, ArrowRight, Clock 
+  Settings2, DollarSign, Bell, ArrowRight, Clock, MessageSquare 
 } from 'lucide-react';
 import Head from 'next/head';
 
@@ -27,50 +27,54 @@ export default function HomeAdmin() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#9ea0a0] to-[#bcbebe] font-sans pb-10 px-6 text-slate-800">
+    // Sugestão de fundo: um gradiente sutil para mais elegância
+    <div className="min-h-screen bg-gradient-to-b from-[#5a5b5b] to-[#7e7f7f] font-sans pb-10 px-6">
       <Head><title>Studio de Gestão | NC</title></Head>
 
-      <div className="pt-20 pb-12 text-center max-w-2xl mx-auto">
+      {/* HEADER: LOGO AUMENTADA E SAUDAÇÃO */}
+      <div className="pt-16 pb-10 text-center max-w-2xl mx-auto">
         <img 
           src="/logo_nc_transparente.png" 
           alt="NC Cerimonial" 
-          className="h-28 mx-auto mb-8 object-contain" // Logo bem evidente
+          className="h-28 mx-auto mb-8 object-contain" // Logo aumentada
         />
-        <p className="text-[#6b5d44] text-[10px] uppercase font-bold tracking-[6px] mb-2">
+        <p className="text-[#ded0b8] text-[10px] uppercase font-bold tracking-[5px] mb-2">
           {saudacao}, {usuarioNome}
         </p>
-        <h1 className="text-black/30 text-[11px] font-bold uppercase tracking-[4px]">Studio de Gestão Elite</h1>
+        <h1 className="text-white/40 text-[11px] font-light uppercase tracking-[3px]">Studio de Gestão</h1>
       </div>
 
-      <div className="max-w-2xl mx-auto space-y-10">
+      <div className="max-w-2xl mx-auto space-y-8">
         
-        {/* PRÓXIMO COMPROMISSO EM DESTAQUE */}
-        <div className="space-y-4">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-black/40 px-4">Prioridade de Agora</h2>
-          <div className="bg-white p-8 rounded-[40px] flex items-center gap-6 shadow-2xl border border-white/50 ring-1 ring-black/5 scale-[1.02] transition-transform">
-            <div className="p-4 bg-[#ded0b8] text-white rounded-3xl shadow-inner">
-              <Clock size={28} />
+        {/* SEÇÃO: PRIORIDADES (COMPROMISSOS) */}
+        <div className="space-y-3">
+          <h2 className="text-[9px] font-bold uppercase tracking-widest text-white/30 px-2">Prioridades de Hoje</h2>
+          
+                   {/* Próximo Compromisso (MANTIDO LARGO) */}
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[35px] p-6 flex items-center gap-5 shadow-xl ring-1 ring-white/5">
+            <div className="p-3 bg-[#ded0b8]/20 text-[#ded0b8] rounded-2xl">
+              <Clock size={20} />
             </div>
             <div className="flex-1">
-              <p className="text-[11px] text-[#b0966a] font-bold uppercase tracking-[2px]">Hoje às 14:00</p>
-              <h3 className="text-gray-800 text-lg font-bold uppercase tracking-tight mt-1">Visita Técnica: Julia</h3>
+              <h3 className="text-white text-xs font-bold uppercase tracking-wider">Próxima Reunião</h3>
+              <p className="text-[10px] text-white/50 mt-1 uppercase tracking-tight">14:00 - Visita Técnica (Julia)</p>
             </div>
-            <ArrowRight size={20} className="text-gray-300" />
+            <ArrowRight size={16} className="text-white/20" />
           </div>
         </div>
 
-        {/* MÓDULOS EM GRADE */}
-        <div className="grid grid-cols-2 gap-4 pb-10">
+        {/* MENU PRINCIPAL: BOTÕES LADO A LADO */}
+        <div className="grid grid-cols-2 gap-3 pb-10">
           {modulos.map(item => (
             <button 
               key={item.id}
               onClick={() => router.push(item.rota)}
-              className="group bg-white/40 backdrop-blur-sm border border-white/60 p-6 rounded-[35px] flex flex-col items-center justify-center gap-4 hover:bg-white/80 transition-all active:scale-[0.95] shadow-sm"
+              className="group bg-white/5 border border-white/10 p-6 rounded-[35px] flex flex-col items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-[0.95]"
             >
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md transition-transform group-hover:rotate-3 ${item.cor}`}>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 ${item.cor}`}>
                 {item.icon}
               </div>
-              <h3 className="text-gray-700 font-bold text-[9px] uppercase tracking-[2px] text-center">
+              <h3 className="text-white font-bold text-[8px] uppercase tracking-[2px] text-center">
                 {item.titulo}
               </h3>
             </button>
