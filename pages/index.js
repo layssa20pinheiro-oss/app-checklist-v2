@@ -36,12 +36,12 @@ export default function HomeAdmin() {
         <img 
           src="/logo_nc_transparente.png" 
           alt="NC Cerimonial" 
-          className="h-20 mx-auto mb-6 object-contain" // Logo aumentada
+          className="h-25 mx-auto mb-6 object-contain" // Logo aumentada
         />
         <p className="text-[#ded0b8] text-[10px] uppercase font-bold tracking-[5px] mb-2">
           {saudacao}, {usuarioNome}
         </p>
-        <h1 className="text-white/40 text-[11px] font-light uppercase tracking-[3px]">Studio de Gestão Elite</h1>
+        <h1 className="text-white/40 text-[11px] font-light uppercase tracking-[3px]">Studio de Gestão</h1>
       </div>
 
       <div className="max-w-2xl mx-auto space-y-8">
