@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Save, DollarSign, ListOrdered } from 'lucide-react';
+import { ArrowLeft, Save, DollarSign, ListOrdered, Calendar, Tag } from 'lucide-react';
 import Head from 'next/head';
 
 const supabase = createClient(
@@ -26,6 +26,7 @@ export default function NovoEvento() {
     e.preventDefault();
     setLoading(true);
 
+    // 1. Criar o Evento no banco de dados
     const { data: eventoCriado, error: errEvento } = await supabase
       .from('eventos')
       .insert([form])
@@ -33,15 +34,15 @@ export default function NovoEvento() {
       .single();
 
     if (errEvento) {
-      alert("Erro ao criar evento.");
+      alert("Erro ao criar evento. Verifique a conexão.");
       setLoading(false);
       return;
     }
 
-    // Lógica das Parcelas no Financeiro
+    // 2. Lógica de Parcelamento Automático para o Financeiro
     if (form.valor_contrato > 0) {
       const qtdParc = parseInt(form.parcelas) || 1;
-      const valorUnico = (parseFloat(form.valor_contrato) / qtdParc).toFixed(2);
+      const valorParcela = (parseFloat(form.valor_contrato) / qtdParc).toFixed(2);
       const lancamentos = [];
 
       for (let i = 0; i < qtdParc; i++) {
@@ -50,7 +51,7 @@ export default function NovoEvento() {
 
         lancamentos.push({
           descricao: `Honorários: ${form.nome} (${i + 1}/${qtdParc})`,
-          valor: valorUnico,
+          valor: valorParcela,
           tipo: 'receita',
           data_vencimento: dataVenc.toISOString().split('T')[0],
           status: i === 0 ? 'concluido' : 'pendente',
@@ -66,23 +67,117 @@ export default function NovoEvento() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#5a5b5b] to-[#7e7f7f] font-sans pb-10">
       <Head><title>Novo Contrato | Studio NC</title></Head>
+
+      {/* HEADER */}
       <div className="pt-12 pb-6 px-6 text-white max-w-md mx-auto flex items-center justify-between">
-        <button onClick={() => router.back()} className="p-2 bg-white/10 rounded-full"><ArrowLeft size={20} /></button>
+        <button onClick={() => router.back()} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition">
+          <ArrowLeft size={20} />
+        </button>
         <h1 className="text-xs font-bold uppercase tracking-[3px]">Novo Contrato de Evento</h1>
         <div className="w-10"></div>
       </div>
+
       <form onSubmit={salvarEvento} className="max-w-md mx-auto px-6 space-y-4">
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[40px] space-y-5">
-           {/* CAMPOS DO EVENTO (Nome, Data, Valor...) */}
-           <input 
-              required className="w-full bg-white/5 border-b border-white/10 py-3 text-white text-sm outline-none" 
-              placeholder="Nome do Evento" 
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[40px] space-y-5 shadow-2xl ring-1 ring-white/5">
+          
+          {/* SEÇÃO 1: BÁSICO */}
+          <div className="space-y-4">
+            <h2 className="text-[9px] font-bold uppercase tracking-widest text-[#ded0b8] flex items-center gap-2">
+               <Tag size={14} /> Informações Gerais
+            </h2>
+            <input 
+              required 
+              className="w-full bg-transparent border-b border-white/10 py-3 text-white text-sm outline-none focus:border-[#ded0b8] transition-colors" 
+              placeholder="Nome do Evento (ex: Maria e João)" 
               onChange={e => setForm({...form, nome: e.target.value})}
-           />
-           {/* ... Restante do formulário que já tínhamos ... */}
-           <button type="submit" className="w-full bg-[#ded0b8] py-5 rounded-3xl font-bold uppercase text-[10px] tracking-[3px]">
-             {loading ? "Cadastrando..." : "Salvar Evento e Gerar Parcelas"}
-           </button>
+            />
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-1">
+                 <label className="text-[8px] text-white/30 uppercase font-bold">Data do Evento</label>
+                 <input 
+                   required type="date" 
+                   className="w-full bg-transparent border-b border-white/10 py-2 text-white text-xs outline-none" 
+                   onChange={e => setForm({...form, data: e.target.value})}
+                 />
+               </div>
+               <div className="space-y-1">
+                 <label className="text-[8px] text-white/30 uppercase font-bold">Tipo</label>
+                 <select 
+                   className="w-full bg-transparent border-b border-white/10 py-2 text-white text-xs outline-none"
+                   onChange={e => setForm({...form, tipo: e.target.value})}
+                 >
+                   <option value="Casamento" className="text-gray-800">Casamento</option>
+                   <option value="15 Anos" className="text-gray-800">15 Anos</option>
+                   <option value="Corporativo" className="text-gray-800">Corporativo</option>
+                 </select>
+               </div>
+            </div>
+          </div>
+
+          <div className="h-px bg-white/10 my-4"></div>
+
+          {/* SEÇÃO 2: FINANCEIRO */}
+          <div className="space-y-4">
+            <h2 className="text-[9px] font-bold uppercase tracking-widest text-[#ded0b8] flex items-center gap-2">
+               <DollarSign size={14} /> Detalhes do Contrato
+            </h2>
+            
+            <div className="space-y-1">
+              <label className="text-[8px] text-white/30 uppercase font-bold">Valor Total Fechado (R$)</label>
+              <input 
+                required
+                type="number" 
+                step="0.01"
+                className="w-full bg-transparent border-b border-white/10 py-2 text-white text-sm outline-none focus:border-[#ded0b8]" 
+                placeholder="0.00"
+                onChange={e => setForm({...form, valor_contrato: e.target.value})}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[8px] text-white/30 uppercase font-bold">Pagamento</label>
+                  <select 
+                    className="w-full bg-transparent border-b border-white/10 py-2 text-white text-[10px] outline-none"
+                    onChange={e => setForm({...form, forma_pagamento: e.target.value})}
+                  >
+                    <option value="Pix" className="text-gray-800">Pix</option>
+                    <option value="Boleto" className="text-gray-800">Boleto</option>
+                    <option value="Parcelado" className="text-gray-800">Parcelado</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[8px] text-white/30 uppercase font-bold flex items-center gap-1">
+                    <ListOrdered size={10}/> Parcelas
+                  </label>
+                  <input 
+                    type="number" 
+                    min="1"
+                    placeholder="1"
+                    className="w-full bg-transparent border-b border-white/10 py-2 text-white text-xs outline-none"
+                    onChange={e => setForm({...form, parcelas: e.target.value})}
+                  />
+                </div>
+            </div>
+
+            <div className="space-y-1 pt-2">
+              <label className="text-[8px] text-white/30 uppercase font-bold tracking-widest">Data do 1º Recebimento</label>
+              <input 
+                type="date" 
+                className="w-full bg-transparent border-b border-white/10 py-2 text-white text-xs outline-none" 
+                onChange={e => setForm({...form, data_pagamento: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-[#ded0b8] text-white font-bold py-5 rounded-3xl text-[10px] uppercase tracking-[3px] shadow-lg hover:bg-[#c5b59a] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-6"
+          >
+            {loading ? "Processando..." : <><Save size={18}/> Salvar Evento e Gerar Parcelas</>}
+          </button>
         </div>
       </form>
     </div>
