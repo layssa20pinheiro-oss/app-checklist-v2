@@ -50,7 +50,9 @@ export default function HomeAdmin() {
 
       {/* HEADER LOGO E SAUDAÇÃO */}
       <div className="pt-16 pb-10 max-w-2xl mx-auto text-center relative">
-        <img src="/logo_nc_transparente.png" alt="NC" className="h-10 mx-auto mb-6 object-contain opacity-80" />
+        {/* LOGO AMPLIADA (de h-10 para h-24) */}
+        <img src="/logo_nc_transparente.png" alt="NC" className="h-24 mx-auto mb-4 object-contain opacity-90" />
+        
         <p className="text-[#ded0b8] text-[9px] uppercase font-bold tracking-[5px] mb-2">{saudacao}, Lay Pinheiro</p>
         <h1 className="text-white text-xl font-light uppercase tracking-[3px]">Studio de Gestão</h1>
         
