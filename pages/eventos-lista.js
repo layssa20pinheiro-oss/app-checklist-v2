@@ -13,7 +13,7 @@ export default function EventosLista() {
   const router = useRouter();
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [abaAtiva, setAbaAtiva] = useState('proximos'); // Controle das abas
+  const [abaAtiva, setAbaAtiva] = useState('proximos');
 
   useEffect(() => {
     carregarEventos();
@@ -25,7 +25,30 @@ export default function EventosLista() {
     setLoading(false);
   }
 
-  // Lógica para filtrar eventos por data
+  // ============================================================
+  // FUNÇÕES DE AÇÃO (EDITAR E DELETAR)
+  // ============================================================
+  async function deletarEvento(e, eventoId, nomeEvento) {
+    e.stopPropagation(); // IMPEDE de abrir o evento ao clicar na lixeira
+    
+    const confirmar = confirm(`Tem certeza que deseja excluir o evento "${nomeEvento}"?`);
+    if (!confirmar) return;
+
+    const { error } = await supabase.from('eventos').delete().eq('id', eventoId);
+    
+    if (error) {
+      alert("Erro ao deletar");
+    } else {
+      carregarEventos(); // Recarrega a lista
+    }
+  }
+
+  function editarEvento(e, eventoId) {
+    e.stopPropagation(); // IMPEDE de abrir o evento ao clicar no lápis
+    router.push(`/eventos-editar?id=${eventoId}`);
+  }
+  // ============================================================
+
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
@@ -38,7 +61,7 @@ export default function EventosLista() {
     <div className="min-h-screen bg-[#7e7f7f] font-sans pb-10">
       <Head><title>Meus Eventos | NC Cerimonial</title></Head>
 
-      {/* [1] CABEÇALHO COM NAVEGAÇÃO */}
+      {/* CABEÇALHO */}
       <div className="pt-12 pb-4 px-6">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button 
@@ -59,7 +82,7 @@ export default function EventosLista() {
         </div>
       </div>
 
-      {/* [2] ABAS DE FILTRO */}
+      {/* ABAS */}
       <div className="max-w-md mx-auto px-6 mb-8">
         <div className="flex gap-8 border-b border-white/10 px-2">
           <button 
@@ -77,7 +100,7 @@ export default function EventosLista() {
         </div>
       </div>
 
-      {/* [3] LISTAGEM DE CARDS */}
+      {/* LISTAGEM */}
       <div className="max-w-md mx-auto px-6 space-y-4">
         {loading ? (
           <p className="text-center text-white/30 uppercase text-[9px] tracking-[4px] py-20 animate-pulse">Sincronizando eventos...</p>
@@ -93,9 +116,21 @@ export default function EventosLista() {
                   <h3 className="font-bold text-gray-700 text-sm uppercase tracking-tight group-hover:text-[#b0966a] transition-colors">
                     {evento.nome}
                   </h3>
-                  <div className="flex gap-2 opacity-10 group-hover:opacity-100 transition-opacity">
-                     <Edit2 size={14} className="text-gray-400" />
-                     <Trash2 size={14} className="text-gray-400" />
+                  
+                  {/* BOTÕES DE AÇÃO INTEGRADOS */}
+                  <div className="flex gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={(e) => editarEvento(e, evento.id)}
+                      className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-blue-500 transition-colors"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button 
+                      onClick={(e) => deletarEvento(e, evento.id, evento.nome)}
+                      className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
 
