@@ -33,8 +33,12 @@ export default function FinanceiroNegocio() {
 
       {/* HEADER */}
       <div className="pt-16 pb-8 max-w-2xl mx-auto flex justify-between items-center text-white">
-        <button onClick={() => router.push('/')} className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition">
-          <ArrowLeft size={20} />
+        <button 
+  onClick={() => router.push('/financeiro-novo')} 
+  className="p-3 bg-[#ded0b8] rounded-2xl text-white shadow-lg"
+>
+  <Plus size={20}/>
+</button>
         </button>
         <h1 className="text-xs font-bold uppercase tracking-[4px]">Gestão Financeira</h1>
         <button className="p-3 bg-[#ded0b8] rounded-2xl text-white shadow-lg"><Plus size={20}/></button>
