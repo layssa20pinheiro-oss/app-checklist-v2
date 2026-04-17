@@ -1,172 +1,139 @@
-import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Save, DollarSign, ListOrdered } from 'lucide-react';
+import { ArrowLeft, Plus, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import Head from 'next/head';
 
+// Credenciais do seu projeto
 const supabase = createClient(
   'https://rticfwqptlxkpgawpzwf.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0aWNmd3FwdGx4a3BnYXdwendmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDA2MTEsImV4cCI6MjA4OTQxNjYxMX0.vOmi-rKKxXuZ5SP7uZe81Cr0fKW_fWN4Hmuf90soijM'
 );
 
-export default function NovoEvento() {
+export default function FinanceiroNegocio() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    nome: '',
-    data: '',
-    tipo: 'Casamento',
-    valor_contrato: '',
-    forma_pagamento: 'Pix',
-    parcelas: 1,
-    data_pagamento: ''
+  const [transacoes, setTransacoes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [abaAtiva, setAbaAtiva] = useState('mensal'); 
+
+  useEffect(() => { carregarDados(); }, []);
+
+  async function carregarDados() {
+    const { data } = await supabase
+      .from('financeiro_negocio')
+      .select('*')
+      .order('data_vencimento', { ascending: true });
+    if (data) setTransacoes(data);
+    setLoading(false);
+  }
+
+  // Lógica de Datas
+  const hoje = new Date();
+  const mesAtual = hoje.getMonth();
+  const anoAtual = hoje.getFullYear();
+
+  // Filtragem por Abas
+  const transacoesMensais = transacoes.filter(t => {
+    const dataVenc = new Date(t.data_vencimento);
+    // Mostra tudo deste mês OU tudo que estiver atrasado (vencido antes deste mês)
+    return dataVenc.getMonth() === mesAtual && dataVenc.getFullYear() === anoAtual || dataVenc < new Date(anoAtual, mesAtual, 1);
   });
 
-  async function salvarEvento(e) {
-  e.preventDefault();
-  setLoading(true);
+  const transacoesFuturas = transacoes.filter(t => {
+    const dataVenc = new Date(t.data_vencimento);
+    // Tudo após o último dia do mês atual
+    return dataVenc > new Date(anoAtual, mesAtual + 1, 0); 
+  });
 
-  // 1. Criar o Evento
-  const { data: eventoCriado, error: errEvento } = await supabase
-    .from('eventos')
-    .insert([form])
-    .select()
-    .single();
+  const listaExibida = abaAtiva === 'mensal' ? transacoesMensais : transacoesFuturas;
 
-  if (errEvento) {
-    alert("Erro ao criar evento");
-    setLoading(false);
-    return;
-  }
-
-  // 2. Lógica de Parcelamento Automático no Financeiro
-  if (form.valor_contrato > 0) {
-    const qtdParcelas = parseInt(form.parcelas) || 1;
-    const valorParcela = (parseFloat(form.valor_contrato) / qtdParcelas).toFixed(2);
-    const lancamentos = [];
-
-    for (let i = 0; i < qtdParcelas; i++) {
-      // Calcula a data de vencimento (uma para cada mês)
-      const dataBase = new Date(form.data_pagamento || form.data);
-      dataBase.setMonth(dataBase.getMonth() + i);
-      
-      lancamentos.push({
-        descricao: `Honorários: ${form.nome} (${i + 1}/${qtdParcelas})`,
-        valor: valorParcela,
-        tipo: 'receita',
-        data_vencimento: dataBase.toISOString().split('T')[0],
-        status: i === 0 ? 'concluido' : 'pendente', // A primeira assume como paga, as outras como pendentes
-        categoria: 'Honorários'
-      });
-    }
-
-    await supabase.from('financeiro_negocio').insert(lancamentos);
-  }
-
-  router.push('/eventos-lista');
-}
-    router.push('/eventos-lista');
-  }
+  // Cálculos do Painel
+  const receitaMes = transacoesMensais.filter(t => t.tipo === 'receita').reduce((acc, curr) => acc + Number(curr.valor), 0);
+  const despesaMes = transacoesMensais.filter(t => t.tipo === 'despesa').reduce((acc, curr) => acc + Number(curr.valor), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#5a5b5b] to-[#7e7f7f] font-sans pb-10">
-      <Head><title>Novo Contrato | Studio NC</title></Head>
+    <div className="min-h-screen bg-gradient-to-b from-[#5a5b5b] to-[#7e7f7f] font-sans pb-10 px-6">
+      <Head><title>Financeiro | Studio NC</title></Head>
 
       {/* HEADER */}
-      <div className="pt-12 pb-6 px-6 text-white max-w-md mx-auto flex items-center justify-between">
-        <button onClick={() => router.back()} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition">
-          <ArrowLeft size={20} />
+      <div className="pt-16 pb-8 max-w-2xl mx-auto flex justify-between items-center text-white">
+        <button onClick={() => router.push('/')} className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition shadow-lg">
+          <ArrowLeft size={20}/>
         </button>
-        <h1 className="text-xs font-bold uppercase tracking-[3px]">Novo Contrato</h1>
-        <div className="w-10"></div>
+        <h1 className="text-xs font-bold uppercase tracking-[4px]">Gestão Financeira</h1>
+        <button onClick={() => router.push('/financeiro-novo')} className="p-3 bg-[#ded0b8] rounded-2xl text-white shadow-xl active:scale-95 transition">
+          <Plus size={20}/>
+        </button>
       </div>
 
-      <form onSubmit={salvarEvento} className="max-w-md mx-auto px-6 space-y-4">
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[40px] space-y-5 shadow-2xl">
+      <div className="max-w-2xl mx-auto space-y-6">
+        
+        {/* CARD DE RESUMO MENSAL */}
+        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-[40px] p-8 text-center shadow-2xl ring-1 ring-white/5">
+          <p className="text-[#ded0b8] text-[9px] font-bold uppercase tracking-[4px] mb-2">Fluxo de Caixa (Este Mês)</p>
+          <h2 className="text-white text-3xl font-bold mb-6 tracking-tight">
+            R$ {(receitaMes - despesaMes).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </h2>
           
-          {/* SEÇÃO: DADOS DO EVENTO */}
-          <div className="space-y-4">
-            <h2 className="text-[9px] font-bold uppercase tracking-widest text-[#ded0b8]">Informações do Evento</h2>
-            <input 
-              required 
-              className="w-full bg-white/5 border-b border-white/10 py-3 text-white text-sm outline-none focus:border-[#ded0b8] transition-colors" 
-              placeholder="Nome do Evento (ex: Maria e João)" 
-              onChange={e => setForm({...form, nome: e.target.value})}
-            />
-            <div className="grid grid-cols-2 gap-4">
-               <input 
-                 required type="date" 
-                 className="bg-transparent border-b border-white/10 py-3 text-white text-xs outline-none focus:border-[#ded0b8]" 
-                 onChange={e => setForm({...form, data: e.target.value})}
-               />
-               <select 
-                 className="bg-transparent border-b border-white/10 py-3 text-white text-xs outline-none"
-                 onChange={e => setForm({...form, tipo: e.target.value})}
-               >
-                 <option value="Casamento" className="text-gray-800">Casamento</option>
-                 <option value="15 Anos" className="text-gray-800">15 Anos</option>
-                 <option value="Corporativo" className="text-gray-800">Corporativo</option>
-               </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-emerald-500/10 p-4 rounded-3xl border border-emerald-500/20 text-emerald-400">
+              <TrendingUp size={14} className="mx-auto mb-1" />
+              <p className="text-[10px] font-bold uppercase tracking-widest">Entradas</p>
+              <p className="text-white font-bold text-sm">R$ {receitaMes.toLocaleString('pt-BR')}</p>
             </div>
-          </div>
-
-          <div className="h-px bg-white/10 my-4"></div>
-
-          {/* SEÇÃO: DADOS FINANCEIROS */}
-          <div className="space-y-4">
-            <h2 className="text-[9px] font-bold uppercase tracking-widest text-[#ded0b8] flex items-center gap-2">
-               <DollarSign size={14} /> Valores do Contrato
-            </h2>
             
-            <input 
-              required
-              type="number" 
-              className="w-full bg-white/5 border-b border-white/10 py-3 text-white text-sm outline-none focus:border-[#ded0b8]" 
-              placeholder="Valor Total (R$)" 
-              onChange={e => setForm({...form, valor_contrato: e.target.value})}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-                <select 
-                  className="bg-transparent border-b border-white/10 py-3 text-white text-[10px] outline-none"
-                  onChange={e => setForm({...form, forma_pagamento: e.target.value})}
-                >
-                  <option value="Pix" className="text-gray-800">Pix</option>
-                  <option value="Boleto" className="text-gray-800">Boleto</option>
-                  <option value="Cartão" className="text-gray-800">Cartão</option>
-                  <option value="Parcelado" className="text-gray-800">Parcelado</option>
-                </select>
-
-                <div className="flex items-center gap-2 border-b border-white/10">
-                  <ListOrdered size={14} className="text-white/20" />
-                  <input 
-                    type="number" 
-                    placeholder="Qtd Parcelas"
-                    className="w-full bg-transparent py-3 text-white text-[10px] outline-none focus:border-[#ded0b8]"
-                    onChange={e => setForm({...form, parcelas: e.target.value})}
-                  />
-                </div>
-            </div>
-
-            <div className="space-y-1 pt-2">
-              <label className="text-[8px] text-white/30 uppercase font-bold tracking-widest">Previsão de Recebimento</label>
-              <input 
-                type="date" 
-                className="w-full bg-transparent border-b border-white/10 py-2 text-white text-xs outline-none focus:border-[#ded0b8]" 
-                onChange={e => setForm({...form, data_pagamento: e.target.value})}
-              />
+            <div className="bg-red-500/10 p-4 rounded-3xl border border-red-500/20 text-red-400">
+              <TrendingDown size={14} className="mx-auto mb-1" />
+              <p className="text-[10px] font-bold uppercase tracking-widest">Saídas</p>
+              <p className="text-white font-bold text-sm">R$ {despesaMes.toLocaleString('pt-BR')}</p>
             </div>
           </div>
+        </div>
 
+        {/* SELETOR DE ABAS */}
+        <div className="flex gap-8 border-b border-white/10 px-4">
           <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-[#ded0b8] text-white font-bold py-5 rounded-3xl text-[10px] uppercase tracking-[3px] shadow-lg hover:bg-[#c5b59a] transition-all flex items-center justify-center gap-2 mt-6"
+            onClick={() => setAbaAtiva('mensal')}
+            className={`pb-4 text-[10px] font-bold uppercase tracking-[2px] transition-all ${abaAtiva === 'mensal' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/30'}`}
           >
-            {loading ? "Cadastrando..." : <><Save size={18}/> Salvar Contrato</>}
+            Este Mês
+          </button>
+          <button 
+            onClick={() => setAbaAtiva('futuro')}
+            className={`pb-4 text-[10px] font-bold uppercase tracking-[2px] transition-all ${abaAtiva === 'futuro' ? 'text-[#ded0b8] border-b-2 border-[#ded0b8]' : 'text-white/30'}`}
+          >
+            Futuros
           </button>
         </div>
-      </form>
+
+        {/* LISTA DINÂMICA */}
+        <div className="space-y-3">
+          {listaExibida.length === 0 ? (
+            <p className="text-center py-20 text-white/20 uppercase text-[9px] tracking-widest">Sem lançamentos para este período</p>
+          ) : (
+            listaExibida.map(t => (
+              <div key={t.id} className="bg-white/5 backdrop-blur-sm border border-white/5 rounded-[30px] p-5 flex items-center justify-between hover:bg-white/10 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-2xl ${t.tipo === 'receita' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                    <DollarSign size={20}/>
+                  </div>
+                  <div>
+                    <h4 className="text-white text-xs font-bold uppercase tracking-tight">{t.descricao}</h4>
+                    <p className="text-[8px] text-white/30 font-bold uppercase mt-1 tracking-wider">
+                      {new Date(t.data_vencimento).toLocaleDateString('pt-BR')} • {t.categoria}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className={`text-sm font-bold ${t.tipo === 'receita' ? 'text-emerald-400' : 'text-white'}`}>
+                    {t.tipo === 'despesa' ? '-' : '+'} R$ {Number(t.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }
