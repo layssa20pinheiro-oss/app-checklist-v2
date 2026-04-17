@@ -23,34 +23,48 @@ export default function NovoEvento() {
   });
 
   async function salvarEvento(e) {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    // 1. Criar o Evento no banco
-    const { data: eventoCriado, error: errEvento } = await supabase
-      .from('eventos')
-      .insert([form])
-      .select()
-      .single();
+  // 1. Criar o Evento
+  const { data: eventoCriado, error: errEvento } = await supabase
+    .from('eventos')
+    .insert([form])
+    .select()
+    .single();
 
-    if (errEvento) {
-      alert("Erro ao criar evento. Verifique se os campos estão corretos.");
-      setLoading(false);
-      return;
-    }
+  if (errEvento) {
+    alert("Erro ao criar evento");
+    setLoading(false);
+    return;
+  }
 
-    // 2. Lançar automaticamente no Financeiro do Studio (Receita)
-    if (form.valor_contrato > 0) {
-      await supabase.from('financeiro_negocio').insert([{
-        descricao: `Contrato: ${form.nome}`,
-        valor: form.valor_contrato,
+  // 2. Lógica de Parcelamento Automático no Financeiro
+  if (form.valor_contrato > 0) {
+    const qtdParcelas = parseInt(form.parcelas) || 1;
+    const valorParcela = (parseFloat(form.valor_contrato) / qtdParcelas).toFixed(2);
+    const lancamentos = [];
+
+    for (let i = 0; i < qtdParcelas; i++) {
+      // Calcula a data de vencimento (uma para cada mês)
+      const dataBase = new Date(form.data_pagamento || form.data);
+      dataBase.setMonth(dataBase.getMonth() + i);
+      
+      lancamentos.push({
+        descricao: `Honorários: ${form.nome} (${i + 1}/${qtdParcelas})`,
+        valor: valorParcela,
         tipo: 'receita',
-        data_vencimento: form.data_pagamento || form.data,
-        status: 'pendente',
+        data_vencimento: dataBase.toISOString().split('T')[0],
+        status: i === 0 ? 'concluido' : 'pendente', // A primeira assume como paga, as outras como pendentes
         categoria: 'Honorários'
-      }]);
+      });
     }
 
+    await supabase.from('financeiro_negocio').insert(lancamentos);
+  }
+
+  router.push('/eventos-lista');
+}
     router.push('/eventos-lista');
   }
 
